@@ -182,7 +182,7 @@ describe('Order management module',() => {
             const updatedOrderData = {
                 discountCode: 'DISCOUNT20',
             };
-            await request(app).put(`/orders/${createdOrder._id}`).send(updatedOrderData);
+            await request(app).put(`/orders/${createdOrder.id}`).send(updatedOrderData);
 
             /*
             * Assert
@@ -197,43 +197,6 @@ describe('Order management module',() => {
             expect(updatedOrders.status).toBe(200);
             expect(updatedOrder.total).toBe(32);
             expect(updatedOrder.discountCode).toBe('DISCOUNT20');
-        });
-
-        it('Should apply a different discount code to an existing order with discount', async () => {
-            /*
-            * Arrange
-            * */
-            const newOrder = {
-                items: [{
-                    price: 20,
-                    quantity: 2
-                }],
-                discountCode: 'DISCOUNT20',
-                shippingAddress: 'Argentina 100'
-            };
-            await request(app).post('/orders').send(newOrder);
-            const createdOrders = await request(app).get('/orders').set('Accept', 'application/json');
-            /*
-            * Act
-            * */
-            const createdOrder = createdOrders.body[0];
-            const updatedOrderData = {
-                discountCode: 'ENGLISH40',
-            };
-            await request(app).put(`/orders/${createdOrder._id}`).send(updatedOrderData);
-
-            /*
-            * Assert
-            * */
-            const updatedOrders = await request(app).get('/orders').set('Accept', 'application/json');
-            const updatedOrder = updatedOrders.body[0];
-            // Order before with previous discount code
-            expect(createdOrder.total).toBe(32);
-            expect(createdOrder.discountCode).toBe('DISCOUNT20');
-            // Order after applying a different discount code
-            expect(updatedOrders.status).toBe(200);
-            expect(updatedOrder.total).toBe(32);
-            expect(updatedOrder.discountCode).toBe('ENGLISH40');
         });
 
         it(`Should modify the address of an existing order`, async () => {
@@ -257,7 +220,7 @@ describe('Order management module',() => {
             const updatedOrderData = {
                 shippingAddress: 'Madrid 101',
             };
-            await request(app).put(`/orders/${createdOrder._id}`).send(updatedOrderData);
+            await request(app).put(`/orders/${createdOrder.id}`).send(updatedOrderData);
 
             /*
             * Assert
@@ -292,7 +255,7 @@ describe('Order management module',() => {
             const updatedOrderData = {
                 status: 'FOO',
             };
-            await request(app).put(`/orders/${createdOrder._id}`).send(updatedOrderData);
+            await request(app).put(`/orders/${createdOrder.id}`).send(updatedOrderData);
 
             /*
             * Assert
@@ -349,15 +312,52 @@ describe('Order management module',() => {
             };
 
             // Simulate someone modifying the order in the database and deleting all the items
-            const order = await OrderDocumentPersistenceEntity.findById(createdOrder._id);
+            const order = await OrderDocumentPersistenceEntity.findById(createdOrder.id);
             order!.items = [];
             await order!.save();
-            const failedOrderCompletion = await request(app).put(`/orders/${createdOrder._id}`).send(updatedOrderData);
+            const failedOrderCompletion = await request(app).put(`/orders/${createdOrder.id}`).send(updatedOrderData);
 
             /*
             * Assert
             * */
-            expect(failedOrderCompletion.text).toBe('Cannot complete an order without items');
+            expect(failedOrderCompletion.text).toBe('The order must have at least one item');
+        });
+
+        it('Should remove discount from total when discount code changes and does not apply', async () => {
+            /*
+            * Arrange
+            * */
+            const newOrder = {
+                items: [{
+                    price: 20,
+                    quantity: 2
+                }],
+                discountCode: 'DISCOUNT20',
+                shippingAddress: 'Argentina 100'
+            };
+            await request(app).post('/orders').send(newOrder);
+            const createdOrders = await request(app).get('/orders').set('Accept', 'application/json');
+            /*
+            * Act
+            * */
+            const createdOrder = createdOrders.body[0];
+            const updatedOrderData = {
+                discountCode: 'ENGLISH40',
+            };
+            await request(app).put(`/orders/${createdOrder.id}`).send(updatedOrderData);
+
+            /*
+            * Assert
+            * */
+            const updatedOrders = await request(app).get('/orders').set('Accept', 'application/json');
+            const updatedOrder = updatedOrders.body[0];
+            // Order before with previous discount code
+            expect(createdOrder.total).toBe(32);
+            expect(createdOrder.discountCode).toBe('DISCOUNT20');
+            // Order after applying a different discount code
+            expect(updatedOrders.status).toBe(200);
+            expect(updatedOrder.total).toBe(40);
+            expect(updatedOrder.discountCode).toBe('ENGLISH40');
         });
 
     });
@@ -386,7 +386,7 @@ describe('Order management module',() => {
             * Act
             * */
             const createdOrder = createdOrders.body[0];
-            await request(app).post(`/orders/${createdOrder._id}/complete`).send();
+            await request(app).post(`/orders/${createdOrder.id}/complete`).send();
 
             /*
             * Assert
@@ -436,12 +436,12 @@ describe('Order management module',() => {
             const updatedOrderData = {
                 status: 'IN_PROGRESS',
             };
-            await request(app).put(`/orders/${createdOrder._id}`).send(updatedOrderData);
+            await request(app).put(`/orders/${createdOrder.id}`).send(updatedOrderData);
 
             /*
             * Act
             * */
-            const failedOrderCompletion = await request(app).post(`/orders/${createdOrder._id}/complete`).send();
+            const failedOrderCompletion = await request(app).post(`/orders/${createdOrder.id}/complete`).send();
 
             /*
             * Assert
@@ -477,7 +477,7 @@ describe('Order management module',() => {
             * Act
             * */
             const createdOrder = createdOrders.body[0];
-            await request(app).delete(`/orders/${createdOrder._id}`).send();
+            await request(app).delete(`/orders/${createdOrder.id}`).send();
 
             /*
             * Assert

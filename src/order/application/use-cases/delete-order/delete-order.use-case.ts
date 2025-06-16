@@ -1,11 +1,17 @@
 // Infrastructure
-import { OrderDocumentPersistenceEntity } from "../../../infrastructure/persistence/order.document-persistence";
+import { OrderRepository } from "../../../infrastructure/repository/order.repository";
+
+// Domain
+import { Id } from "../../../domain/aggregate/value-objects";
+
 
 export class DeleteOrder {
     async execute(id: string): Promise<void> {
         try {
-            // Get order by id
-            await OrderDocumentPersistenceEntity.findByIdAndDelete(id);
+            // Instance order repository
+            const repository = new OrderRepository();
+            // Delete order by id
+            await repository.deleteById(new Id(id));
         } catch (e: any) {
             throw new Error(e.message);
         }

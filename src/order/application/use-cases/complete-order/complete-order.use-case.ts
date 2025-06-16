@@ -1,25 +1,27 @@
 // Infrastructure
-import { OrderDocumentPersistenceEntity } from "../../../infrastructure/persistence/order.document-persistence";
+import { OrderRepository } from "../../../infrastructure/repository/order.repository";
+
+// Domain
+import { OrderAggregate } from "../../../domain/aggregate/order.aggregate";
+import { Id } from "../../../domain/aggregate/value-objects";
 
 export class CompleteOrder {
     async execute(id: string): Promise<void> {
         try {
-            // Get order by id
-            const order = await OrderDocumentPersistenceEntity.findById(id);
+            // Instance order repository and save order
+            const repository = new OrderRepository();
+
+            // Get aggregate from repository
+            const order: OrderAggregate | null = await repository.findById(new Id(id));
 
             // Ensure order exists
             if (!order) {
                 throw new Error('Order not found to complete');
             }
 
-            // Ensure status transition is valid. ToDo: Business logic should be on aggregate
-            if (order.status !== 'CREATED') {
-                throw new Error(`Cannot complete an order with status: ${order.status}`);
-            }
-
-            // Complete order and save it. ToDo: Business logic should be on aggregate
-            order.status = 'COMPLETED';
-            await order.save();
+            // Complete order and save it
+            const updatedOrder: OrderAggregate = OrderAggregate.complete(order);
+            await repository.update(updatedOrder);
         } catch (e: any) {
             throw new Error(e.message);
         }
