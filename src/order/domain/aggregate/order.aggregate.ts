@@ -14,77 +14,46 @@ export class OrderAggregate {
         this.items = dto.items!.map(item => new Item(item));
         this.status = new Status(dto.status || '');
         this.discountCode = new DiscountCode(dto.discountCode || '');
-        this.shippingAddress = new ShippingAddress(dto.shippingAddress);
+        this.shippingAddress = new ShippingAddress(dto.shippingAddress || '');
         this.total = new Total(dto.total || 0);
     }
 
-    static create(dto: IOrder): OrderAggregate {
+    /* Business Logic */
+    static place(dto: IOrder): OrderAggregate {
         // Order must have at least one item
         OrderAggregate.ensureOrderHasItems(dto.items!);
 
-        // Calculate order total without discount.
-        const total: number = dto.items!.map(item => {
-            let total = 0;
-            total += (item.price || 0) * (item.quantity || 0);
-            return total;
-        })[0];
-
         // Calculate discount multiplier.
-        const discount: number = dto.discountCode === 'DISCOUNT20' ? 0.8 : 1;
+        const discountMultiplier: number = DiscountCode.getDiscountMultiplier(dto.discountCode);
 
-        // Calculate order total considering discount.
-        dto.total = total * discount;
+        // Calculate order total
+        dto.total = Total.calculateTotal(dto.items!, discountMultiplier);
 
         // Set status to created
-        dto.status = 'CREATED';
+        dto.status = Status.create();
+
+        // Ensure status transition is valid.
+        OrderAggregate.ensureOrderStatusTransitionIsValid({ from: '', to: dto.status });
 
         // Build aggregate
         return new OrderAggregate(dto);
     }
 
-    static update(persistedOrder: OrderAggregate, newOrderData: IOrder): OrderAggregate {
+    static confirm(persistedOrder: OrderAggregate): OrderAggregate {
         // Order must have at least one item
-        OrderAggregate.ensureOrderHasItems(persistedOrder.items.map(item => item.value ));
+        OrderAggregate.ensureOrderHasItems(persistedOrder.items.map(item => item.value));
 
-        // Calculate order total without discount.
-        const total: number = persistedOrder.items.map(item => {
-            let total = 0;
-            total += (item.value.price || 0) * (item.value.quantity || 0);
-            return total;
-        })[0];
-
-        // Calculate discount multiplier.
-        const discount: number = newOrderData.discountCode === 'DISCOUNT20' ? 0.8 : 1;
-
-        // Calculate order total considering discount.
-        newOrderData.total = total * discount;
-
-        // Updated data
-        const updatedData = {
-            id: persistedOrder.id.value,
-            items: persistedOrder.items.map(item => item.value),
-            status: newOrderData.status ? newOrderData.status : persistedOrder.status.value,
-            discountCode: newOrderData.discountCode ? newOrderData.discountCode : persistedOrder.discountCode.value,
-            shippingAddress: newOrderData.shippingAddress ? newOrderData.shippingAddress : persistedOrder.shippingAddress.value,
-            total: newOrderData.total,
-        };
-
-        // Build aggregate
-        return new OrderAggregate(updatedData);
-    }
-
-    static complete(persistedOrder: OrderAggregate): OrderAggregate {
-        // Order must have at least one item
-        OrderAggregate.ensureOrderHasItems(persistedOrder.items.map(item => item.value ));
+        // New confirmed status
+        const newStatus = Status.confirm();
 
         // Ensure status transition is valid.
-        OrderAggregate.ensureOrderIsCreated(persistedOrder.status.value);
+        OrderAggregate.ensureOrderStatusTransitionIsValid({ from: persistedOrder.status.value, to: newStatus });
 
         // Updated data
         const updatedData = {
             id: persistedOrder.id.value,
             items: persistedOrder.items.map(item => item.value),
-            status: 'COMPLETED',
+            status: newStatus,
             discountCode: persistedOrder.discountCode.value,
             shippingAddress: persistedOrder.shippingAddress.value,
             total: persistedOrder.total.value,
@@ -94,20 +63,92 @@ export class OrderAggregate {
         return new OrderAggregate(updatedData);
     }
 
+    static complete(persistedOrder: OrderAggregate): OrderAggregate {
+        // Order must have at least one item
+        OrderAggregate.ensureOrderHasItems(persistedOrder.items.map(item => item.value));
+
+        // New confirmed status
+        const newStatus = Status.complete();
+
+        // Ensure status transition is valid.
+        OrderAggregate.ensureOrderStatusTransitionIsValid({ from: persistedOrder.status.value, to: newStatus });
+
+        // Updated data
+        const updatedData = {
+            id: persistedOrder.id.value,
+            items: persistedOrder.items.map(item => item.value),
+            status: newStatus,
+            discountCode: persistedOrder.discountCode.value,
+            shippingAddress: persistedOrder.shippingAddress.value,
+            total: persistedOrder.total.value,
+        };
+
+        // Build aggregate
+        return new OrderAggregate(updatedData);
+    }
+
+    static changeAddress(persistedOrder: OrderAggregate, newOrderData: IOrder): OrderAggregate {
+        // Order must have at least one item
+        OrderAggregate.ensureOrderHasItems(persistedOrder.items.map(item => item.value));
+
+        // Updated data
+        const updatedData = {
+            id: persistedOrder.id.value,
+            items: persistedOrder.items.map(item => item.value),
+            status: persistedOrder.status.value,
+            discountCode: persistedOrder.discountCode.value,
+            shippingAddress: newOrderData.shippingAddress ? newOrderData.shippingAddress : persistedOrder.shippingAddress.value,
+            total: newOrderData.total,
+        };
+
+        // Build aggregate
+        return new OrderAggregate(updatedData);
+    }
+
+    static applyDiscount(persistedOrder: OrderAggregate, newOrderData: IOrder): OrderAggregate {
+        // Order must have at least one item
+        OrderAggregate.ensureOrderHasItems(persistedOrder.items.map(item => item.value));
+
+        OrderAggregate.ensureOrderDiscountWasNotApplied(persistedOrder.discountCode.value);
+
+        // Calculate discount multiplier.
+        const discountMultiplier: number = DiscountCode.getDiscountMultiplier(newOrderData.discountCode);
+
+        // Calculate order total
+        const newTotal = Total.calculateTotal(persistedOrder.items.map(item => item.value), discountMultiplier);
+
+        // Updated data
+        const updatedData = {
+            id: persistedOrder.id.value,
+            items: persistedOrder.items.map(item => item.value),
+            status: persistedOrder.status.value,
+            discountCode: newOrderData.discountCode ? newOrderData.discountCode : persistedOrder.discountCode.value,
+            shippingAddress: persistedOrder.shippingAddress.value,
+            total: newTotal
+        };
+
+        // Build aggregate
+        return new OrderAggregate(updatedData);
+    }
+
     /*
     * Invariants
     * */
-
-    // Ensure order contains at least 1 item
     static ensureOrderHasItems(dto: IItems[]): void {
         if (!dto || !Array.isArray(dto) || dto.length === 0) {
             throw new Error('The order must have at least one item');
         }
     }
 
-    static ensureOrderIsCreated(status: string): void {
-        if (status !== 'CREATED') {
-            throw new Error(`Cannot complete an order with status: ${status}`);
+    static ensureOrderStatusTransitionIsValid(dto: { from: string, to: string }): void {
+        if(!Status.validateStatusTransition(dto)) {
+            throw new Error(`Cannot change order status`);
+        }
+    }
+
+    static ensureOrderDiscountWasNotApplied(discountCode: string): void {
+        if(discountCode) {
+            throw new Error(`A discount was already applied to order`);
         }
     }
 

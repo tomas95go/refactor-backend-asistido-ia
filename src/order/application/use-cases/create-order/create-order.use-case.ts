@@ -11,11 +11,10 @@ export class CreateOrder {
     async execute(dto: ICreateOrder): Promise<void> {
         try {
             // Create new order
-            const order: OrderAggregate = OrderAggregate.create(dto);
+            const order: OrderAggregate = OrderAggregate.place(dto);
 
             // Instance order repository and save order
-            const repository = new OrderRepository();
-            await repository.save(order);
+            await new OrderRepository().save(order);
         } catch (e: any) {
             throw new Error(e.message);
         }

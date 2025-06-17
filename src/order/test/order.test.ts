@@ -155,7 +155,7 @@ describe('Order management module',() => {
         });
     });
 
-    describe('Update an existing order', () => {
+    describe('Apply discount to order', () => {
 
         afterEach(async () => {
             await OrderDocumentPersistenceEntity.deleteMany();
@@ -182,7 +182,7 @@ describe('Order management module',() => {
             const updatedOrderData = {
                 discountCode: 'DISCOUNT20',
             };
-            await request(app).put(`/orders/${createdOrder.id}`).send(updatedOrderData);
+            await request(app).put(`/orders/${createdOrder.id}/apply-discount`).send(updatedOrderData);
 
             /*
             * Assert
@@ -199,7 +199,65 @@ describe('Order management module',() => {
             expect(updatedOrder.discountCode).toBe('DISCOUNT20');
         });
 
-        it(`Should modify the address of an existing order`, async () => {
+        /* Enforce business rules */
+        it(`Should not apply a discount to an order that doesn't exist`, async () => {
+            /*
+            * Arrange
+            * */
+            const orderId = 'abc1234';
+            /*
+            * Act
+            * */
+            const updatedOrderData = {
+                discountCode: 'DISCOUNT20',
+            };
+            const failedOrderCompletion = await request(app).put(`/orders/${orderId}/apply-discount`).send(updatedOrderData);
+
+            /*
+            * Assert
+            * */
+            expect(failedOrderCompletion.text).toBe('Order not found');
+        });
+
+        it('Should not apply a new discount when a previous one was applied', async () => {
+            /*
+            * Arrange
+            * */
+            const newOrder = {
+                items: [{
+                    price: 20,
+                    quantity: 2
+                }],
+                discountCode: 'DISCOUNT20',
+                shippingAddress: 'Argentina 100'
+            };
+            await request(app).post('/orders').send(newOrder);
+            const createdOrders = await request(app).get('/orders').set('Accept', 'application/json');
+            /*
+            * Act
+            * */
+            const createdOrder = createdOrders.body[0];
+            const updatedOrderData = {
+                discountCode: 'DISCOUNT20',
+            };
+            const failedOrderCompletion = await request(app).put(`/orders/${createdOrder.id}/apply-discount`).send(updatedOrderData);
+
+            /*
+            * Assert
+            * */
+            // Order after applying a different discount code
+            expect(failedOrderCompletion.text).toBe('A discount was already applied to order');
+        });
+
+    });
+
+    describe('Change order address', () => {
+
+        afterEach(async () => {
+            await OrderDocumentPersistenceEntity.deleteMany();
+        });
+
+        it(`Should change the address of an existing order`, async () => {
             /*
             * Arrange
             * */
@@ -220,7 +278,7 @@ describe('Order management module',() => {
             const updatedOrderData = {
                 shippingAddress: 'Madrid 101',
             };
-            await request(app).put(`/orders/${createdOrder.id}`).send(updatedOrderData);
+            await request(app).put(`/orders/${createdOrder.id}/change-address`).send(updatedOrderData);
 
             /*
             * Assert
@@ -234,43 +292,8 @@ describe('Order management module',() => {
             expect(updatedOrder.shippingAddress).toBe('Madrid 101');
         });
 
-        it(`Should modify order status`, async () => {
-            /*
-            * Arrange
-            * */
-            const newOrder = {
-                items: [{
-                    price: 20,
-                    quantity: 2
-                }],
-                discountCode: '',
-                shippingAddress: 'Argentina 100'
-            };
-            await request(app).post('/orders').send(newOrder);
-            const createdOrders = await request(app).get('/orders').set('Accept', 'application/json');
-            /*
-            * Act
-            * */
-            const createdOrder = createdOrders.body[0];
-            const updatedOrderData = {
-                status: 'FOO',
-            };
-            await request(app).put(`/orders/${createdOrder.id}`).send(updatedOrderData);
-
-            /*
-            * Assert
-            * */
-            const updatedOrders = await request(app).get('/orders').set('Accept', 'application/json');
-            const updatedOrder = updatedOrders.body[0];
-            // Order before completion
-            expect(createdOrder.status).toBe('CREATED');
-            // Order after completion
-            expect(updatedOrders.status).toBe(200);
-            expect(updatedOrder.status).toBe('FOO');
-        });
-
         /* Enforce business rules */
-        it(`Should prevent the edition of an order that doesn't exist`, async () => {
+        it(`Should not apply a discount to an order that doesn't exist`, async () => {
             /*
             * Arrange
             * */
@@ -279,9 +302,9 @@ describe('Order management module',() => {
             * Act
             * */
             const updatedOrderData = {
-                status: 'COMPLETED',
+                shippingAddress: 'Madrid 101',
             };
-            const failedOrderCompletion = await request(app).put(`/orders/${orderId}`).send(updatedOrderData);
+            const failedOrderCompletion = await request(app).put(`/orders/${orderId}/change-address`).send(updatedOrderData);
 
             /*
             * Assert
@@ -289,7 +312,15 @@ describe('Order management module',() => {
             expect(failedOrderCompletion.text).toBe('Order not found');
         });
 
-        it(`Should prevent the completion of an existing order when it doesn't have items`, async () => {
+    });
+
+    describe('Confirm an existing order', () => {
+
+        afterEach(async () => {
+            await OrderDocumentPersistenceEntity.deleteMany();
+        });
+
+        it(`Should confirm an existing order`, async () => {
             /*
             * Arrange
             * */
@@ -307,57 +338,33 @@ describe('Order management module',() => {
             * Act
             * */
             const createdOrder = createdOrders.body[0];
-            const updatedOrderData = {
-                status: 'COMPLETED',
-            };
-
-            // Simulate someone modifying the order in the database and deleting all the items
-            const order = await OrderDocumentPersistenceEntity.findById(createdOrder.id);
-            order!.items = [];
-            await order!.save();
-            const failedOrderCompletion = await request(app).put(`/orders/${createdOrder.id}`).send(updatedOrderData);
+            await request(app).post(`/orders/${createdOrder.id}/confirm`).send();
 
             /*
             * Assert
             * */
-            expect(failedOrderCompletion.text).toBe('The order must have at least one item');
+            const completedOrders = await request(app).get('/orders').set('Accept', 'application/json');
+            const completedOrder = completedOrders.body[0];
+
+            expect(completedOrders.status).toBe(200);
+            expect(completedOrder.status).toBe('CONFIRMED');
         });
 
-        it('Should remove discount from total when discount code changes and does not apply', async () => {
+        /* Enforce business rules */
+        it(`Should prevent the completion of an order that doesn't exist`, async () => {
             /*
             * Arrange
             * */
-            const newOrder = {
-                items: [{
-                    price: 20,
-                    quantity: 2
-                }],
-                discountCode: 'DISCOUNT20',
-                shippingAddress: 'Argentina 100'
-            };
-            await request(app).post('/orders').send(newOrder);
-            const createdOrders = await request(app).get('/orders').set('Accept', 'application/json');
+            const orderId = 'abc1234';
             /*
             * Act
             * */
-            const createdOrder = createdOrders.body[0];
-            const updatedOrderData = {
-                discountCode: 'ENGLISH40',
-            };
-            await request(app).put(`/orders/${createdOrder.id}`).send(updatedOrderData);
+            const failedOrderCompletion = await request(app).post(`/orders/${orderId}/complete`).send();
 
             /*
             * Assert
             * */
-            const updatedOrders = await request(app).get('/orders').set('Accept', 'application/json');
-            const updatedOrder = updatedOrders.body[0];
-            // Order before with previous discount code
-            expect(createdOrder.total).toBe(32);
-            expect(createdOrder.discountCode).toBe('DISCOUNT20');
-            // Order after applying a different discount code
-            expect(updatedOrders.status).toBe(200);
-            expect(updatedOrder.total).toBe(40);
-            expect(updatedOrder.discountCode).toBe('ENGLISH40');
+            expect(failedOrderCompletion.text).toBe('Order not found');
         });
 
     });
@@ -382,10 +389,12 @@ describe('Order management module',() => {
             };
             await request(app).post('/orders').send(newOrder);
             const createdOrders = await request(app).get('/orders').set('Accept', 'application/json');
+            const createdOrder = createdOrders.body[0];
+            await request(app).post(`/orders/${createdOrder.id}/confirm`).send();
+
             /*
             * Act
             * */
-            const createdOrder = createdOrders.body[0];
             await request(app).post(`/orders/${createdOrder.id}/complete`).send();
 
             /*
@@ -412,10 +421,10 @@ describe('Order management module',() => {
             /*
             * Assert
             * */
-            expect(failedOrderCompletion.text).toBe('Order not found to complete');
+            expect(failedOrderCompletion.text).toBe('Order not found');
         });
 
-        it(`Should prevent the completion of an order when it's status is not CREATED`, async () => {
+        it(`Should prevent the completion of an order when status is not valid, e.g: CREATED to COMPLETED`, async () => {
             /*
             * Arrange
             * */
@@ -430,13 +439,7 @@ describe('Order management module',() => {
             };
             await request(app).post('/orders').send(newOrder);
             const createdOrders = await request(app).get('/orders').set('Accept', 'application/json');
-
-            // Update the order with an 'IN PROGRESS' status
             const createdOrder = createdOrders.body[0];
-            const updatedOrderData = {
-                status: 'IN_PROGRESS',
-            };
-            await request(app).put(`/orders/${createdOrder.id}`).send(updatedOrderData);
 
             /*
             * Act
@@ -447,8 +450,7 @@ describe('Order management module',() => {
             * Assert
             * */
             const updatedOrders = await request(app).get('/orders').set('Accept', 'application/json');
-            const updatedOrder = updatedOrders.body[0];
-            expect(failedOrderCompletion.text).toBe(`Cannot complete an order with status: ${updatedOrder.status}`);
+            expect(failedOrderCompletion.text).toBe(`Cannot change order status`);
         });
 
     });
