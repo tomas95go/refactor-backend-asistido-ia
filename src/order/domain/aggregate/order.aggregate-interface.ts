@@ -3,7 +3,7 @@ export interface IOrder {
     items?: IItems[];
     status?: string;
     discountCode?: string;
-    shippingAddress: string;
+    shippingAddress?: string;
     total?: number;
 }
 
