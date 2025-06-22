@@ -105,4 +105,20 @@ describe('Create an order', () => {
         expect(order.shippingAddress).toBe(orderRequest.shippingAddress);
         expect(order.total).toBe(32)
     });
+
+    it('Should prevent the creation of an order without items', async () => {
+        const orderRequest = {
+            items: [],
+            discountCode: 'DISCOUNT20',
+            shippingAddress: 'Avenida Siempreviva 100'
+        }
+
+        const response = await request(server).post('/orders').send(orderRequest);
+        expect(response.status).toBe(200);
+        expect(response.text).toBe(`The order must have at least one item`);
+
+        const orders = await request(server).get('/orders');
+
+        expect(orders.body).toHaveLength(0);
+    });
 });
