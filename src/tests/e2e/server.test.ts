@@ -164,6 +164,23 @@ describe('Order management module', () => {
             expect(updateOrderResponse.text).toBe(`Order updated. New status: ${updatedOrder.status}`);
             expect(updatedOrder.shippingAddress).toBe(newOrderAddress.shippingAddress);
         });
+
+        it('Should apply a discount to an existing order', async () => {
+            await createValidOrder(server);
+            const createdOrder = await getValidOrder(server);
+
+            const newDiscountCode = {
+                discountCode: 'DISCOUNT20',
+            }
+
+            const updateOrderResponse = await request(server).put(`/orders/${createdOrder._id}`).send(newDiscountCode);
+            expect(updateOrderResponse.status).toBe(200);
+
+            const updatedOrder = await getValidOrder(server);
+            expect(updateOrderResponse.text).toBe(`Order updated. New status: ${updatedOrder.status}`);
+            expect(updatedOrder.discountCode).toBe(newDiscountCode.discountCode);
+            expect(updatedOrder.total).toBe(32);
+        });
     })
 
     describe('Delete an order', () => {
