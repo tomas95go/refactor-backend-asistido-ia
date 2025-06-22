@@ -125,6 +125,7 @@ describe('Order management module', () => {
 
             expect(orders.body).toHaveLength(0);
         });
+
     });
 
     describe('List orders', () => {
@@ -143,6 +144,7 @@ describe('Order management module', () => {
             expect(orders.status).toBe(200);
             expect(orders.body).toHaveLength(0);
         });
+
     });
 
     describe('Delete an order', () => {
@@ -155,6 +157,7 @@ describe('Order management module', () => {
             expect(deleteResponse.status).toBe(200);
             expect(deleteResponse.text).toBe(`Order deleted`);
         });
+
     });
 
     describe('Completes an order', () => {
@@ -170,6 +173,25 @@ describe('Order management module', () => {
             const completedOrder = await getValidOrder(server);
             expect(completedOrder.status).toBe(`COMPLETED`);
         });
+
+        it('Should prevent the completion of an non-existing order', async () => {
+            const completeOrderResponse = await request(server).post(`/orders/123/complete`);
+            expect(completeOrderResponse.status).toBe(200);
+            expect(completeOrderResponse.text).toBe(`Order not found to complete`);
+        });
+
+        it('Should prevent the completion of an order which status is NOT created', async () => {
+            await createValidOrder(server);
+            const createdOrder = await getValidOrder(server);
+
+            await request(server).post(`/orders/${createdOrder._id}/complete`);
+            const failedCompletionOrderResponse = await request(server).post(`/orders/${createdOrder._id}/complete`);
+            expect(failedCompletionOrderResponse.status).toBe(200);
+
+            const failedOrder = await getValidOrder(server);
+            expect(failedCompletionOrderResponse.text).toBe(`Cannot complete an order with status: ${failedOrder.status}`);
+        });
+
     });
 
 });
