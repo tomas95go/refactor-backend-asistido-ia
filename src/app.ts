@@ -1,40 +1,31 @@
-import express, { Request, Response, RequestHandler } from 'express';
+import express, { Express, Request, RequestHandler, Response } from 'express';
 import mongoose from 'mongoose';
-import {
-    createOrder,
-    getAllOrders,
-    updateOrder,
-    completeOrder,
-    deleteOrder
-} from './controllers/orderController';
+import { completeOrder, createOrder, deleteOrder, getAllOrders, updateOrder } from './controllers/orderController';
 
-import dotenv from 'dotenv';
+/**
+ * @param serverPort
+ * @param databaseConnectionString
+ */
+export function createServer(serverPort: string, databaseConnectionString: string) {
+    mongoose
+        .connect(databaseConnectionString)
+        .then(() => console.log('Connected to MongoDB'))
+        .catch((err) => console.error('Error connecting to MongoDB:', err));
 
-dotenv.config({
-    path: process.env.NODE_ENV === 'test' ? '.env.test' : '.env',
-});
+    const app: Express = express();
+    app.use(express.json());
 
-const DB_URL = process.env.MONGO_CONNECTION_STRING;
-const PORT = process.env.SERVER_PORT;
+    app.post('/orders', ((req: Request, res: Response) => createOrder(req, res)) as RequestHandler);
+    app.get('/orders', ((req: Request, res: Response) => getAllOrders(req, res)) as RequestHandler);
+    app.put('/orders/:id', ((req: Request, res: Response) => updateOrder(req, res)) as RequestHandler);
+    app.post('/orders/:id/complete', ((req: Request, res: Response) => completeOrder(req, res)) as RequestHandler);
+    app.delete('/orders/:id', ((req: Request, res: Response) => deleteOrder(req, res)) as RequestHandler);
+    app.get('/', ((req: Request, res: Response) => {
+        console.log("GET /");
+        res.send({status: 'ok'});
+    }) as RequestHandler);
 
-mongoose
-    .connect(DB_URL as string)
-    .then(() => console.log('Connected to MongoDB'))
-    .catch((err) => console.error('Error connecting to MongoDB:', err));
-
-export const app = express();
-app.use(express.json());
-
-app.post('/orders', ((req: Request, res: Response) => createOrder(req, res)) as RequestHandler);
-app.get('/orders', ((req: Request, res: Response) => getAllOrders(req, res)) as RequestHandler);
-app.put('/orders/:id', ((req: Request, res: Response) => updateOrder(req, res)) as RequestHandler);
-app.post('/orders/:id/complete', ((req: Request, res: Response) => completeOrder(req, res)) as RequestHandler);
-app.delete('/orders/:id', ((req: Request, res: Response) => deleteOrder(req, res)) as RequestHandler);
-app.get('/', ((req: Request, res: Response) => {
-    console.log("GET /");
-    res.send({ status: 'ok' });
-}) as RequestHandler);
-
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+    return app.listen(serverPort, () => {
+        console.log(`Server running on port ${serverPort}`);
+    });
+}
