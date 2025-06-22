@@ -131,4 +131,31 @@ describe('Order management module', () => {
         });
     });
 
+    describe('List orders', () => {
+
+        it('Should list all orders', async () => {
+            const orderRequest = {
+                items: [{
+                    productId: 'ae9cbd56-d4f7-4970-b06c-0f08839147fd',
+                    quantity: 2,
+                    price: 20
+                }],
+                shippingAddress: 'Avenida Siempreviva 100'
+            }
+
+            await request(server).post('/orders').send(orderRequest);
+
+            const orders = await request(server).get('/orders');
+            expect(orders.status).toBe(200);
+            expect(orders.body).toHaveLength(1);
+        });
+
+        it('Should not list orders when there are not any', async () => {
+            const orders = await request(server).get('/orders');
+
+            expect(orders.status).toBe(200);
+            expect(orders.body).toHaveLength(0);
+        });
+    })
+
 });
