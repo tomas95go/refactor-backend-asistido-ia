@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node dist/app.js",
-    "dev": "concurrently \"tsc --watch\" \"node --watch dist/app.js\"",
-    "test": "jest --forceExit"
+    "dev": "set NODE_ENV=development concurrently \"tsc --watch\" \"node --watch dist/app.js\"",
+    "test": "set NODE_ENV=test jest --forceExit"
   },
   "keywords": [],
   "author": "",

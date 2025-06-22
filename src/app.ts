@@ -8,11 +8,17 @@ import {
     deleteOrder
 } from './controllers/orderController';
 
-const DB_URL = 'mongodb://localhost:27017/db_orders';
-const PORT = 3002;
+import dotenv from 'dotenv';
+
+dotenv.config({
+    path: process.env.NODE_ENV === 'test' ? '.env.test' : '.env',
+});
+
+const DB_URL = process.env.MONGO_CONNECTION_STRING;
+const PORT = process.env.SERVER_PORT;
 
 mongoose
-    .connect(DB_URL)
+    .connect(DB_URL as string)
     .then(() => console.log('Connected to MongoDB'))
     .catch((err) => console.error('Error connecting to MongoDB:', err));
 
