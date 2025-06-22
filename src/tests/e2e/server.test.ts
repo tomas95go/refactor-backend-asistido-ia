@@ -197,6 +197,16 @@ describe('Order management module', () => {
             expect(updateOrderResponse.text).toBe(`Order updated. New status: ${updatedOrder.status}`);
             expect(updatedOrder.status).toBe(newStatus.status);
         });
+
+        it('Should prevent the modification of an non-existing order', async () => {
+            const newDiscountCode = {
+                discountCode: 'DISCOUNT20',
+            };
+
+            const failedUpdateOrderResponse = await request(server).put(`/orders/123`).send(newDiscountCode);
+            expect(failedUpdateOrderResponse.status).toBe(200);
+            expect(failedUpdateOrderResponse.text).toBe(`Order not found`);
+        });
     })
 
     describe('Delete an order', () => {
