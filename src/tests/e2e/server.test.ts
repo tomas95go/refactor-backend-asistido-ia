@@ -147,6 +147,25 @@ describe('Order management module', () => {
 
     });
 
+    describe('Updated an order', () => {
+
+        it('Should update the address of an existing order', async () => {
+            await createValidOrder(server);
+            const createdOrder = await getValidOrder(server);
+
+            const newOrderAddress = {
+                shippingAddress: 'Salt street 200',
+            }
+
+            const updateOrderResponse = await request(server).put(`/orders/${createdOrder._id}`).send(newOrderAddress);
+            expect(updateOrderResponse.status).toBe(200);
+
+            const updatedOrder = await getValidOrder(server);
+            expect(updateOrderResponse.text).toBe(`Order updated. New status: ${updatedOrder.status}`);
+            expect(updatedOrder.shippingAddress).toBe(newOrderAddress.shippingAddress);
+        });
+    })
+
     describe('Delete an order', () => {
 
         it('Should delete an order', async () => {
