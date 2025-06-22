@@ -33,6 +33,20 @@ describe('Status endpoint', () => {
     });
 });
 
+async function createValidOrder(server: Server, discountCode?: string) {
+    const orderRequest = {
+        items: [{
+            productId: 'ae9cbd56-d4f7-4970-b06c-0f08839147fd',
+            quantity: 2,
+            price: 20
+        }],
+        discountCode: discountCode,
+        shippingAddress: 'Avenida Siempreviva 100'
+    }
+
+    return await request(server).post('/orders').send(orderRequest);
+}
+
 describe('Order management module', () => {
 
     let server: Server;
@@ -60,16 +74,7 @@ describe('Order management module', () => {
     describe('Create a new order', () => {
 
         it('Should create an order without discount', async () => {
-            const orderRequest = {
-                items: [{
-                    productId: 'ae9cbd56-d4f7-4970-b06c-0f08839147fd',
-                    quantity: 2,
-                    price: 20
-                }],
-                shippingAddress: 'Avenida Siempreviva 100'
-            }
-
-            const response = await request(server).post('/orders').send(orderRequest);
+            const response = await createValidOrder(server);
             expect(response.status).toBe(200);
             expect(response.text).toBe(`Order created with total: 40`);
 
@@ -77,27 +82,17 @@ describe('Order management module', () => {
             const order = orders.body[0];
 
             expect(orders.body).toHaveLength(1);
-            expect(order.items[0].productId).toBe(orderRequest.items[0].productId);
-            expect(order.items[0].quantity).toBe(orderRequest.items[0].quantity);
-            expect(order.items[0].price).toBe(orderRequest.items[0].price);
+            expect(order.items[0].productId).toBe('ae9cbd56-d4f7-4970-b06c-0f08839147fd');
+            expect(order.items[0].quantity).toBe(2);
+            expect(order.items[0].price).toBe(20);
             expect(order.status).toBe('CREATED');
             expect(order.discountCode).toBe(undefined);
-            expect(order.shippingAddress).toBe(orderRequest.shippingAddress);
-            expect(order.total).toBe(40)
+            expect(order.shippingAddress).toBe('Avenida Siempreviva 100');
+            expect(order.total).toBe(40);
         });
 
         it('Should create an order with discount', async () => {
-            const orderRequest = {
-                items: [{
-                    productId: 'ae9cbd56-d4f7-4970-b06c-0f08839147fd',
-                    quantity: 2,
-                    price: 20
-                }],
-                discountCode: 'DISCOUNT20',
-                shippingAddress: 'Avenida Siempreviva 100'
-            }
-
-            const response = await request(server).post('/orders').send(orderRequest);
+            const response = await createValidOrder(server, 'DISCOUNT20');
             expect(response.status).toBe(200);
             expect(response.text).toBe(`Order created with total: 32`);
 
@@ -105,12 +100,12 @@ describe('Order management module', () => {
             const order = orders.body[0];
 
             expect(orders.body).toHaveLength(1);
-            expect(order.items[0].productId).toBe(orderRequest.items[0].productId);
-            expect(order.items[0].quantity).toBe(orderRequest.items[0].quantity);
-            expect(order.items[0].price).toBe(orderRequest.items[0].price);
+            expect(order.items[0].productId).toBe('ae9cbd56-d4f7-4970-b06c-0f08839147fd');
+            expect(order.items[0].quantity).toBe(2);
+            expect(order.items[0].price).toBe(20);
             expect(order.status).toBe('CREATED');
-            expect(order.discountCode).toBe(orderRequest.discountCode);
-            expect(order.shippingAddress).toBe(orderRequest.shippingAddress);
+            expect(order.discountCode).toBe('DISCOUNT20');
+            expect(order.shippingAddress).toBe('Avenida Siempreviva 100');
             expect(order.total).toBe(32)
         });
 
@@ -134,16 +129,7 @@ describe('Order management module', () => {
     describe('List orders', () => {
 
         it('Should list all orders', async () => {
-            const orderRequest = {
-                items: [{
-                    productId: 'ae9cbd56-d4f7-4970-b06c-0f08839147fd',
-                    quantity: 2,
-                    price: 20
-                }],
-                shippingAddress: 'Avenida Siempreviva 100'
-            }
-
-            await request(server).post('/orders').send(orderRequest);
+            await createValidOrder(server);
 
             const orders = await request(server).get('/orders');
             expect(orders.status).toBe(200);
