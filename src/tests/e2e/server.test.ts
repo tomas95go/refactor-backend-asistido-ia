@@ -77,4 +77,32 @@ describe('Create an order', () => {
         expect(order.shippingAddress).toBe(orderRequest.shippingAddress);
         expect(order.total).toBe(40)
     });
+
+    it('Should create an order with discount', async () => {
+        const orderRequest = {
+            items: [{
+                productId: 'ae9cbd56-d4f7-4970-b06c-0f08839147fd',
+                quantity: 2,
+                price: 20
+            }],
+            discountCode: 'DISCOUNT20',
+            shippingAddress: 'Avenida Siempreviva 100'
+        }
+
+        const response = await request(server).post('/orders').send(orderRequest);
+        expect(response.status).toBe(200);
+        expect(response.text).toBe(`Order created with total: 32`);
+
+        const orders = await request(server).get('/orders');
+        const order = orders.body[0];
+
+        expect(orders.body).toHaveLength(1);
+        expect(order.items[0].productId).toBe(orderRequest.items[0].productId);
+        expect(order.items[0].quantity).toBe(orderRequest.items[0].quantity);
+        expect(order.items[0].price).toBe(orderRequest.items[0].price);
+        expect(order.status).toBe('CREATED');
+        expect(order.discountCode).toBe(orderRequest.discountCode);
+        expect(order.shippingAddress).toBe(orderRequest.shippingAddress);
+        expect(order.total).toBe(32)
+    });
 });
