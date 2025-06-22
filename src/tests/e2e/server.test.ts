@@ -146,6 +146,7 @@ describe('Order management module', () => {
     });
 
     describe('Delete an order', () => {
+
         it('Should delete an order', async () => {
             await createValidOrder(server);
             const order = await getValidOrder(server);
@@ -154,6 +155,21 @@ describe('Order management module', () => {
             expect(deleteResponse.status).toBe(200);
             expect(deleteResponse.text).toBe(`Order deleted`);
         });
-    })
+    });
+
+    describe('Completes an order', () => {
+
+        it('Should complete an existing order', async () => {
+            await createValidOrder(server);
+            const createdOrder = await getValidOrder(server);
+
+            const completeOrderResponse = await request(server).post(`/orders/${createdOrder._id}/complete`);
+            expect(completeOrderResponse.status).toBe(200);
+            expect(completeOrderResponse.text).toBe(`Order with id ${createdOrder._id} completed`);
+
+            const completedOrder = await getValidOrder(server);
+            expect(completedOrder.status).toBe(`COMPLETED`);
+        });
+    });
 
 });
