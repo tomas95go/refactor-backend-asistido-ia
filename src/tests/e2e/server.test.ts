@@ -155,7 +155,7 @@ describe('Order management module', () => {
 
             const newOrderAddress = {
                 shippingAddress: 'Salt street 200',
-            }
+            };
 
             const updateOrderResponse = await request(server).put(`/orders/${createdOrder._id}`).send(newOrderAddress);
             expect(updateOrderResponse.status).toBe(200);
@@ -171,7 +171,7 @@ describe('Order management module', () => {
 
             const newDiscountCode = {
                 discountCode: 'DISCOUNT20',
-            }
+            };
 
             const updateOrderResponse = await request(server).put(`/orders/${createdOrder._id}`).send(newDiscountCode);
             expect(updateOrderResponse.status).toBe(200);
@@ -180,6 +180,22 @@ describe('Order management module', () => {
             expect(updateOrderResponse.text).toBe(`Order updated. New status: ${updatedOrder.status}`);
             expect(updatedOrder.discountCode).toBe(newDiscountCode.discountCode);
             expect(updatedOrder.total).toBe(32);
+        });
+
+        it('Should complete an existing order', async () => {
+            await createValidOrder(server);
+            const createdOrder = await getValidOrder(server);
+
+            const newStatus = {
+                status: 'COMPLETED',
+            };
+
+            const updateOrderResponse = await request(server).put(`/orders/${createdOrder._id}`).send(newStatus);
+            expect(updateOrderResponse.status).toBe(200);
+
+            const updatedOrder = await getValidOrder(server);
+            expect(updateOrderResponse.text).toBe(`Order updated. New status: ${updatedOrder.status}`);
+            expect(updatedOrder.status).toBe(newStatus.status);
         });
     })
 
