@@ -47,6 +47,11 @@ async function createValidOrder(server: Server, discountCode?: string) {
     return await request(server).post('/orders').send(orderRequest);
 }
 
+async function getValidOrder(server: Server) {
+    const orders = await request(server).get('/orders');
+    return orders.body[0];
+}
+
 describe('Order management module', () => {
 
     let server: Server;
@@ -78,10 +83,8 @@ describe('Order management module', () => {
             expect(response.status).toBe(200);
             expect(response.text).toBe(`Order created with total: 40`);
 
-            const orders = await request(server).get('/orders');
-            const order = orders.body[0];
+            const order = await getValidOrder(server);
 
-            expect(orders.body).toHaveLength(1);
             expect(order.items[0].productId).toBe('ae9cbd56-d4f7-4970-b06c-0f08839147fd');
             expect(order.items[0].quantity).toBe(2);
             expect(order.items[0].price).toBe(20);
@@ -96,10 +99,8 @@ describe('Order management module', () => {
             expect(response.status).toBe(200);
             expect(response.text).toBe(`Order created with total: 32`);
 
-            const orders = await request(server).get('/orders');
-            const order = orders.body[0];
+            const order = await getValidOrder(server);
 
-            expect(orders.body).toHaveLength(1);
             expect(order.items[0].productId).toBe('ae9cbd56-d4f7-4970-b06c-0f08839147fd');
             expect(order.items[0].quantity).toBe(2);
             expect(order.items[0].price).toBe(20);
@@ -141,6 +142,17 @@ describe('Order management module', () => {
 
             expect(orders.status).toBe(200);
             expect(orders.body).toHaveLength(0);
+        });
+    });
+
+    describe('Delete an order', () => {
+        it('Should delete an order', async () => {
+            await createValidOrder(server);
+            const order = await getValidOrder(server);
+
+            const deleteResponse = await request(server).delete(`/orders/${order._id}`);
+            expect(deleteResponse.status).toBe(200);
+            expect(deleteResponse.text).toBe(`Order deleted`);
         });
     })
 
