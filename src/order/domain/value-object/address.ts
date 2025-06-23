@@ -3,7 +3,7 @@ export class Address {
     }
 
     static create(value: string): Address {
-        if (!value) {
+        if (!value || value.trim() === '') {
             throw new Error('Address cannot be empty');
         }
         return new Address(value);

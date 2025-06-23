@@ -21,6 +21,7 @@ describe('Manage addresses', () => {
 
    it('Should prevent the creation of an empty address', () => {
        expect(() => Address.create('')).toThrow('Address cannot be empty');
+       expect(() => Address.create('  ')).toThrow('Address cannot be empty');
    });
 
 });
