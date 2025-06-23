@@ -1,5 +1,6 @@
 import {PositiveNumber} from "../../order/domain/value-object/positive-number";
 import {Address} from "../../order/domain/value-object/address";
+import {Id} from "../../order/domain/value-object/id";
 
 describe('Manage positive numbers', () => {
    it('Should create a positive number', () => {
@@ -25,3 +26,11 @@ describe('Manage addresses', () => {
    });
 
 });
+
+describe('Manage Id', () => {
+    it('Should create a unique Id', () => {
+        const id1 = Id.create();
+        const id2 = Id.create();
+        expect(id1.value).not.toBe(id2.value);
+    });
+})
