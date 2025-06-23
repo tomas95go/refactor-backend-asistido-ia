@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { OrderModel } from '../models/orderModel';
-import {OrderStatus} from "../order/domain/constant/status.enum";
+import {OrderStatus} from "../order/domain/constant/status";
+import {DiscountCodes} from "../order/domain/constant/discount-code";
 
 // Create a new order
 export const createOrder = async (req: Request, res: Response) => {
@@ -16,7 +17,7 @@ export const createOrder = async (req: Request, res: Response) => {
         total += (item.price || 0) * (item.quantity || 0);
     }
 
-    if (discountCode === 'DISCOUNT20') {
+    if (discountCode === DiscountCodes.DISCOUNT20) {
         total = total * 0.8;
     }
 
@@ -62,7 +63,7 @@ export const updateOrder = async (req: Request, res: Response) => {
 
     if (discountCode) {
         order.discountCode = discountCode;
-        if (discountCode === 'DISCOUNT20') {
+        if (discountCode === DiscountCodes.DISCOUNT20) {
             let newTotal = 0;
             for (const item of order.items) {
                 newTotal += (item.price || 0) * (item.quantity || 0);

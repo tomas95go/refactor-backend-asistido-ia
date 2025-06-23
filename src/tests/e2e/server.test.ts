@@ -3,7 +3,8 @@ import dotenv from "dotenv";
 import { Server } from "node:http";
 import mongoose from "mongoose";
 import { createServer } from '../../app';
-import {OrderStatus} from "../../order/domain/constant/status.enum";
+import {OrderStatus} from "../../order/domain/constant/status";
+import {DiscountCodes} from "../../order/domain/constant/discount-code";
 
 dotenv.config({ path: '.env.test' });
 
@@ -96,7 +97,7 @@ describe('Order management module', () => {
         });
 
         it('Should create an order with discount', async () => {
-            const response = await createValidOrder(server, 'DISCOUNT20');
+            const response = await createValidOrder(server, DiscountCodes.DISCOUNT20);
             expect(response.status).toBe(200);
             expect(response.text).toBe(`Order created with total: 32`);
 
@@ -106,7 +107,7 @@ describe('Order management module', () => {
             expect(order.items[0].quantity).toBe(2);
             expect(order.items[0].price).toBe(20);
             expect(order.status).toBe(OrderStatus.Created);
-            expect(order.discountCode).toBe('DISCOUNT20');
+            expect(order.discountCode).toBe(DiscountCodes.DISCOUNT20);
             expect(order.shippingAddress).toBe('Avenida Siempreviva 100');
             expect(order.total).toBe(32)
         });
@@ -114,7 +115,7 @@ describe('Order management module', () => {
         it('Should prevent the creation of an order without items', async () => {
             const orderRequest = {
                 items: [],
-                discountCode: 'DISCOUNT20',
+                discountCode: DiscountCodes.DISCOUNT20,
                 shippingAddress: 'Avenida Siempreviva 100'
             }
 
@@ -171,7 +172,7 @@ describe('Order management module', () => {
             const createdOrder = await getValidOrder(server);
 
             const newDiscountCode = {
-                discountCode: 'DISCOUNT20',
+                discountCode: DiscountCodes.DISCOUNT20,
             };
 
             const updateOrderResponse = await request(server).put(`/orders/${createdOrder._id}`).send(newDiscountCode);
@@ -201,7 +202,7 @@ describe('Order management module', () => {
 
         it('Should prevent the modification of an non-existing order', async () => {
             const newDiscountCode = {
-                discountCode: 'DISCOUNT20',
+                discountCode: DiscountCodes.DISCOUNT20,
             };
 
             const failedUpdateOrderResponse = await request(server).put(`/orders/123`).send(newDiscountCode);

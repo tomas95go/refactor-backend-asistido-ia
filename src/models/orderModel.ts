@@ -1,5 +1,6 @@
 import mongoose, { Document, Schema, Model } from 'mongoose';
-import {OrderStatus} from "../order/domain/constant/status.enum";
+import {OrderStatus} from "../order/domain/constant/status";
+import {DiscountCode} from "../order/domain/constant/discount-code";
 
 export interface IOrder extends Document {
     _id: string;
@@ -9,7 +10,7 @@ export interface IOrder extends Document {
         price: number;
     }[];
     status: string;
-    discountCode?: string;
+    discountCode?: DiscountCode;
     shippingAddress: string;
     total?: number;
 }
