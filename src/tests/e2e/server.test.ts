@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import { Server } from "node:http";
 import mongoose from "mongoose";
 import { createServer } from '../../app';
+import {OrderStatus} from "../../order/domain/constant/status.enum";
 
 dotenv.config({ path: '.env.test' });
 
@@ -88,7 +89,7 @@ describe('Order management module', () => {
             expect(order.items[0].productId).toBe('ae9cbd56-d4f7-4970-b06c-0f08839147fd');
             expect(order.items[0].quantity).toBe(2);
             expect(order.items[0].price).toBe(20);
-            expect(order.status).toBe('CREATED');
+            expect(order.status).toBe(OrderStatus.Created);
             expect(order.discountCode).toBe(undefined);
             expect(order.shippingAddress).toBe('Avenida Siempreviva 100');
             expect(order.total).toBe(40);
@@ -104,7 +105,7 @@ describe('Order management module', () => {
             expect(order.items[0].productId).toBe('ae9cbd56-d4f7-4970-b06c-0f08839147fd');
             expect(order.items[0].quantity).toBe(2);
             expect(order.items[0].price).toBe(20);
-            expect(order.status).toBe('CREATED');
+            expect(order.status).toBe(OrderStatus.Created);
             expect(order.discountCode).toBe('DISCOUNT20');
             expect(order.shippingAddress).toBe('Avenida Siempreviva 100');
             expect(order.total).toBe(32)
@@ -187,7 +188,7 @@ describe('Order management module', () => {
             const createdOrder = await getValidOrder(server);
 
             const newStatus = {
-                status: 'COMPLETED',
+                status: OrderStatus.Completed,
             };
 
             const updateOrderResponse = await request(server).put(`/orders/${createdOrder._id}`).send(newStatus);
