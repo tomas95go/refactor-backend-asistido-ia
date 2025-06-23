@@ -10,4 +10,8 @@ export class PositiveNumber {
 
         return new PositiveNumber(value);
     }
+
+    multiply(number: PositiveNumber): PositiveNumber {
+        return PositiveNumber.create(this.value * number.value);
+    }
 }

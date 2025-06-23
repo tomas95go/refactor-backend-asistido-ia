@@ -6,4 +6,8 @@ export class Id {
     static create(): Id {
         return new Id(uuid());
     }
+
+    static from(id: string): Id {
+        return new Id(id);
+    }
 }
