@@ -8,8 +8,8 @@ export class OrderLine {
         readonly price: PositiveNumber
     ) {}
 
-    static create(productId: string, quantity: number, price: number): OrderLine {
-        return new OrderLine(Id.from(productId), PositiveNumber.create(quantity), PositiveNumber.create(price));
+    static create(productId: Id, quantity: PositiveNumber, price: PositiveNumber): OrderLine {
+        return new OrderLine(productId, quantity, price);
     }
 
     calculateSubTotal(): PositiveNumber {

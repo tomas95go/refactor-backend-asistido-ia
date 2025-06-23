@@ -58,7 +58,7 @@ describe('Manage order lines', () => {
         const quantity = 2;
         const total = 200;
 
-        const orderLine = OrderLine.create(productId, quantity, price);
+        const orderLine: OrderLine = OrderLine.create(Id.from(productId), PositiveNumber.create(quantity), PositiveNumber.create(price));
         expect(orderLine.productId.value).toBe(productId);
         expect(orderLine.price.value).toBe(price);
         expect(orderLine.quantity.value).toBe(quantity);
