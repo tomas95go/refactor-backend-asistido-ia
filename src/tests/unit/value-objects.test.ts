@@ -5,18 +5,27 @@ import {OrderLine} from "../../order/domain/value-object/order-line";
 
 describe('Manage positive numbers', () => {
    it('Should create a positive number', () => {
-       const positiveNumber = PositiveNumber.create(1);
+       const positiveNumber: PositiveNumber = PositiveNumber.create(1);
        expect(positiveNumber.value).toBe(1);
    });
 
-   it('Should multiply 2 numbers', () => {
-       const positiveNumber1 = PositiveNumber.create(1);
-       const positiveNumber2 = PositiveNumber.create(2);
+   it('Should multiply 2 positive numbers', () => {
+       const positiveNumber1: PositiveNumber = PositiveNumber.create(1);
+       const positiveNumber2: PositiveNumber = PositiveNumber.create(2);
 
-       const result = positiveNumber1.multiply(positiveNumber2);
+       const result: PositiveNumber = positiveNumber1.multiply(positiveNumber2);
 
-       expect(result.value).toBe(2);
+       expect(result).toEqual(PositiveNumber.create(2));
     });
+
+   it('Should add 2 positive numbers', () => {
+       const positiveNumber1: PositiveNumber = PositiveNumber.create(1);
+       const positiveNumber2: PositiveNumber = PositiveNumber.create(2);
+
+       const result: PositiveNumber = positiveNumber1.add(positiveNumber2);
+
+       expect(result).toEqual(PositiveNumber.create(3));
+   });
 
    it('Should prevent the creation of a negative number', () => {
        expect(() => PositiveNumber.create(-1)).toThrow('Negative numbers are not allowed');
