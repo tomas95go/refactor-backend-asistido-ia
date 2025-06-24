@@ -18,6 +18,7 @@ describe('Manage order aggregate', () => {
         const shippingAddress: Address = Address.create('Avenida Siempreviva 100');
 
         const order: Order = Order.create(items, shippingAddress);
+        expect(order.id).toBeDefined();
         expect(order.items).toBe(items);
         expect(order.shippingAddress).toBe(shippingAddress);
         expect(order.status).toBe(OrderStatus.Created);
@@ -35,10 +36,18 @@ describe('Manage order aggregate', () => {
         const discountCode: DiscountCode = DiscountCodes.DISCOUNT20;
 
         const order: Order = Order.create(items, shippingAddress, discountCode);
+        expect(order.id).toBeDefined();
         expect(order.items).toBe(items);
         expect(order.shippingAddress).toBe(shippingAddress);
         expect(order.discountCode).toBe(discountCode);
         expect(order.status).toBe(OrderStatus.Created);
+    });
+
+    it('Should prevent the creation of an order aggregate when no items are provided', () => {
+        const items: OrderLine[] = [];
+        const shippingAddress: Address = Address.create('Avenida Siempreviva 100');
+
+        expect(() => Order.create(items, shippingAddress)).toThrow('The order must have at least one item');
     });
 
 });
