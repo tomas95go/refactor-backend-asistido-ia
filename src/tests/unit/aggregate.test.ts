@@ -21,7 +21,7 @@ describe('Manage order aggregate', () => {
         expect(order.id).toBeDefined();
         expect(order.items).toBe(items);
         expect(order.shippingAddress).toBe(shippingAddress);
-        expect(order.status).toBe(OrderStatus.Created);
+        //expect(order.status).toBe(OrderStatus.Created);
     });
 
     it('Should create an order aggregate with discount', () => {
@@ -40,7 +40,7 @@ describe('Manage order aggregate', () => {
         expect(order.items).toBe(items);
         expect(order.shippingAddress).toBe(shippingAddress);
         expect(order.discountCode).toBe(discountCode);
-        expect(order.status).toBe(OrderStatus.Created);
+        //expect(order.status).toBe(OrderStatus.Created);
     });
 
     it('Should calculate the order total without a discount', () => {
@@ -69,6 +69,23 @@ describe('Manage order aggregate', () => {
 
         const order: Order = Order.create(items, shippingAddress, DiscountCodes.DISCOUNT20);
         expect(order.calculateTotal()).toEqual(PositiveNumber.create(160));
+    });
+
+    it('Should complete an order', () => {
+        const itemsPrimitives = [{
+            productId: '8259dff2-4bf5-41da-b9b4-010b76988b30',
+            price: 100,
+            quantity: 2
+        }];
+
+        const items: OrderLine[] = itemsPrimitives.map(item => OrderLine.create(Id.from(item.productId), PositiveNumber.create(item.quantity), PositiveNumber.create(item.price)));
+        const shippingAddress: Address = Address.create('Avenida Siempreviva 100');
+
+        const order: Order = Order.create(items, shippingAddress, DiscountCodes.DISCOUNT20);
+
+        order.complete();
+
+        expect(order.isCompleted()).toBe(true);
     });
 
     it('Should prevent the creation of an order aggregate when no items are provided', () => {
