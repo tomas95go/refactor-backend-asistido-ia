@@ -95,4 +95,21 @@ describe('Manage order aggregate', () => {
         expect(() => Order.create(items, shippingAddress)).toThrow('The order must have at least one item');
     });
 
+    it('Should prevent the completion of an order aggregate when it was already completed', () => {
+        const itemsPrimitives = [{
+            productId: '8259dff2-4bf5-41da-b9b4-010b76988b30',
+            price: 100,
+            quantity: 2
+        }];
+
+        const items: OrderLine[] = itemsPrimitives.map(item => OrderLine.create(Id.from(item.productId), PositiveNumber.create(item.quantity), PositiveNumber.create(item.price)));
+        const shippingAddress: Address = Address.create('Avenida Siempreviva 100');
+
+        const order: Order = Order.create(items, shippingAddress, DiscountCodes.DISCOUNT20);
+
+        order.complete();
+
+        expect(() => order.complete()).toThrow('Cannot complete an order with status: COMPLETED');
+    });
+
 });

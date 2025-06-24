@@ -35,6 +35,9 @@ export class Order {
     }
 
     complete() {
+        if(this.status !== OrderStatus.Created) {
+            throw new DomainError(`Cannot complete an order with status: ${this.status}`);
+        }
         this.status = OrderStatus.Completed;
     }
 
