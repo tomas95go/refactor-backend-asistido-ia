@@ -103,11 +103,12 @@ describe('Manage order aggregate', () => {
         const orderPersistenceModel = order.toPersistence();
 
         expect(orderPersistenceModel).toStrictEqual({
-            id: Id.from(order.id.value).value,
+            _id: Id.from(order.id.value).value,
             items: itemsPrimitives,
             shippingAddress: 'Avenida Siempreviva 100',
             status: OrderStatus.Created,
-            discountCode: DiscountCodes.DISCOUNT20
+            discountCode: DiscountCodes.DISCOUNT20,
+            total: order.calculateTotal().value
         });
     });
 
