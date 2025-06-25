@@ -88,6 +88,29 @@ describe('Manage order aggregate', () => {
         expect(order.isCompleted()).toBe(true);
     });
 
+    it('Should convert order domain model to persistence model', () => {
+        const itemsPrimitives = [{
+            productId: '8259dff2-4bf5-41da-b9b4-010b76988b30',
+            price: 100,
+            quantity: 2
+        }];
+
+        const items: OrderLine[] = itemsPrimitives.map(item => OrderLine.create(Id.from(item.productId), PositiveNumber.create(item.quantity), PositiveNumber.create(item.price)));
+        const shippingAddress: Address = Address.create('Avenida Siempreviva 100');
+
+        const order: Order = Order.create(items, shippingAddress, DiscountCodes.DISCOUNT20);
+
+        const orderPersistenceModel = order.toPersistence();
+
+        expect(orderPersistenceModel).toStrictEqual({
+            id: Id.from(order.id.value).value,
+            items: itemsPrimitives,
+            shippingAddress: 'Avenida Siempreviva 100',
+            status: OrderStatus.Created,
+            discountCode: DiscountCodes.DISCOUNT20
+        });
+    });
+
     it('Should prevent the creation of an order aggregate when no items are provided', () => {
         const items: OrderLine[] = [];
         const shippingAddress: Address = Address.create('Avenida Siempreviva 100');
