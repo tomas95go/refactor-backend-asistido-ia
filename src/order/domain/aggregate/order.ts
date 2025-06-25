@@ -62,16 +62,10 @@ export class Order {
         }
     }
 
-    toDomain(persisted: any): Order {
+    toDomain(persisted: { _id: string; items: { productId: string; quantity: number; price: number; }[]; shippingAddress: string; status: OrderStatus, discountCode?: DiscountCode }): Order {
         return new Order(
             Id.from(persisted._id),
-            persisted.items.map((item: any) => {
-              return {
-                  productId: Id.from(item.productId),
-                  quantity: PositiveNumber.create(item.quantity),
-                  price: PositiveNumber.create(item.price),
-              }
-            }),
+            persisted.items.map((item: any) => OrderLine.create(Id.from(item.productId),PositiveNumber.create(item.quantity),PositiveNumber.create(item.price))),
             Address.create(persisted.shippingAddress),
             persisted.status,
             persisted.discountCode);
