@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { OrderModel } from '../models/orderModel';
 import {OrderStatus} from "../order/domain/constant/status";
-import {DiscountCodes} from "../order/domain/constant/discount-code";
+import {DiscountCode, DiscountCodes} from "../order/domain/constant/discount-code";
 import {OrderLine} from "../order/domain/value-object/order-line";
 import {Id} from "../order/domain/value-object/id";
 import {PositiveNumber} from "../order/domain/value-object/positive-number";
@@ -97,42 +97,36 @@ export const updateOrder = async (req: Request, res: Response) => {
 
 // Complete order
 export const completeOrder = async (req: Request, res: Response) => {
-    console.log("POST /orders/:id/complete");
-    const { id } = req.params;
-
-    const order = await OrderModel.findById(id);
-    if (!order) {
-        return res.send('Order not found to complete');
-    }
-
-    if (order.status !== OrderStatus.Created) {
-        return res.send(`Cannot complete an order with status: ${order.status}`);
-    }
-
-    order.status = OrderStatus.Completed;
-    await order.save();
-    res.send(`Order with id ${id} completed`);
-};
-
-export const completeOrderNew = async (req: Request, res: Response) => {
     try {
         console.log("POST /orders/:id/complete");
         const { id } = req.params;
 
-        const order = await OrderModel.findById(id);
-        if (!order) {
+        const orderDocument = await OrderModel.findById(id);
+
+        if (!orderDocument) {
             return res.send('Order not found to complete');
         }
 
-        if (order.status !== OrderStatus.Created) {
-            return res.send(`Cannot complete an order with status: ${order.status}`);
+        const persistedOrder = {
+            _id: orderDocument._id,
+            items: orderDocument.items.map(item => { return { productId: item.productId, quantity: item.quantity, price: item.price } },),
+            shippingAddress: orderDocument.shippingAddress,
+            status: orderDocument.status as OrderStatus,
+            discountCode: orderDocument.discountCode
         }
 
-        order.status = OrderStatus.Completed;
-        await order.save();
+        const order: Order = Order.toDomain(persistedOrder);
+        order.complete();
+
+        const orderToPersist = order.toPersistence();
+        const orderDocumentToPersist = new OrderModel({...orderToPersist});
+        await OrderModel.findOneAndReplace({_id: id}, orderDocumentToPersist, { new: true });
         res.send(`Order with id ${id} completed`);
     } catch (error) {
-
+        if(error instanceof DomainError) {
+            return res.send(error.message);
+        }
+        res.send('Unexpected error');
     }
 };
 
