@@ -6,6 +6,14 @@ import {DiscountCode, DiscountCodes} from "../constant/discount-code";
 import {DomainError} from "../error/error";
 import {PositiveNumber} from "../value-object/positive-number";
 
+type PersistOrderModel = {
+    _id: string;
+    items: { productId: string; quantity: number; price: number; }[];
+    shippingAddress: string;
+    status: OrderStatus,
+    discountCode?: DiscountCode
+};
+
 export class Order {
     private constructor(
         readonly id: Id,
@@ -62,7 +70,7 @@ export class Order {
         }
     }
 
-    toDomain(persisted: { _id: string; items: { productId: string; quantity: number; price: number; }[]; shippingAddress: string; status: OrderStatus, discountCode?: DiscountCode }): Order {
+    toDomain(persisted: PersistOrderModel): Order {
         return new Order(
             Id.from(persisted._id),
             persisted.items.map((item: any) => OrderLine.create(Id.from(item.productId),PositiveNumber.create(item.quantity),PositiveNumber.create(item.price))),
