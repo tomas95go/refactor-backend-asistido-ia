@@ -114,6 +114,28 @@ export const completeOrder = async (req: Request, res: Response) => {
     res.send(`Order with id ${id} completed`);
 };
 
+export const completeOrderNew = async (req: Request, res: Response) => {
+    try {
+        console.log("POST /orders/:id/complete");
+        const { id } = req.params;
+
+        const order = await OrderModel.findById(id);
+        if (!order) {
+            return res.send('Order not found to complete');
+        }
+
+        if (order.status !== OrderStatus.Created) {
+            return res.send(`Cannot complete an order with status: ${order.status}`);
+        }
+
+        order.status = OrderStatus.Completed;
+        await order.save();
+        res.send(`Order with id ${id} completed`);
+    } catch (error) {
+
+    }
+};
+
 // Delete order
 export const deleteOrder = async (req: Request, res: Response) => {
     console.log("DELETE /orders/:id");

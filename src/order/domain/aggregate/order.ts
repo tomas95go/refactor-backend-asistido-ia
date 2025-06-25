@@ -61,4 +61,19 @@ export class Order {
             total: this.calculateTotal().value
         }
     }
+
+    toDomain(persisted: any): Order {
+        return new Order(
+            Id.from(persisted._id),
+            persisted.items.map((item: any) => {
+              return {
+                  productId: Id.from(item.productId),
+                  quantity: PositiveNumber.create(item.quantity),
+                  price: PositiveNumber.create(item.price),
+              }
+            }),
+            Address.create(persisted.shippingAddress),
+            persisted.status,
+            persisted.discountCode);
+    }
 }

@@ -111,6 +111,28 @@ describe('Manage order aggregate', () => {
         });
     });
 
+    it('Should convert a persistence model to domain model', () => {
+        const itemsPrimitives = [{
+            productId: '8259dff2-4bf5-41da-b9b4-010b76988b30',
+            price: 100,
+            quantity: 2
+        }];
+
+        const items: OrderLine[] = itemsPrimitives.map(item => OrderLine.create(Id.from(item.productId), PositiveNumber.create(item.quantity), PositiveNumber.create(item.price)));
+        const shippingAddress: Address = Address.create('Avenida Siempreviva 100');
+
+        const order: Order = Order.create(items, shippingAddress, DiscountCodes.DISCOUNT20);
+
+        const orderPersistenceModel = order.toPersistence();
+        const orderDomainModel = order.toDomain(orderPersistenceModel);
+
+        expect(orderDomainModel.id.value).toEqual(orderPersistenceModel._id);
+        expect(orderDomainModel.items.map(item => { return { productId: item.productId.value, quantity: item.quantity.value, price: item.price.value } })).toStrictEqual(orderPersistenceModel.items.map(item => { return { productId: item.productId, quantity: item.quantity, price: item.price } }));
+        expect(orderDomainModel.shippingAddress.value).toEqual(orderPersistenceModel.shippingAddress);
+        expect(orderDomainModel.discountCode).toEqual(orderPersistenceModel.discountCode);
+
+    });
+
     it('Should prevent the creation of an order aggregate when no items are provided', () => {
         const items: OrderLine[] = [];
         const shippingAddress: Address = Address.create('Avenida Siempreviva 100');
