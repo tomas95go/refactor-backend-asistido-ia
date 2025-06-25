@@ -30,6 +30,15 @@ export class Order {
         return new Order(Id.create(), items, shippingAddress, OrderStatus.Created, discountCode);
     }
 
+    static toDomain(persisted: PersistOrderModel): Order {
+        return new Order(
+            Id.from(persisted._id),
+            persisted.items.map((item: any) => OrderLine.create(Id.from(item.productId),PositiveNumber.create(item.quantity),PositiveNumber.create(item.price))),
+            Address.create(persisted.shippingAddress),
+            persisted.status,
+            persisted.discountCode);
+    }
+
     calculateTotal(): PositiveNumber {
         const total: PositiveNumber = this.items.reduce((total, item) => total.add(item.calculateSubTotal()), PositiveNumber.create(0));
         return this.applyDiscount(total);
@@ -68,14 +77,5 @@ export class Order {
             discountCode: this.discountCode,
             total: this.calculateTotal().value
         }
-    }
-
-    toDomain(persisted: PersistOrderModel): Order {
-        return new Order(
-            Id.from(persisted._id),
-            persisted.items.map((item: any) => OrderLine.create(Id.from(item.productId),PositiveNumber.create(item.quantity),PositiveNumber.create(item.price))),
-            Address.create(persisted.shippingAddress),
-            persisted.status,
-            persisted.discountCode);
     }
 }

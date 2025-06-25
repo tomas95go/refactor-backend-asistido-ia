@@ -124,7 +124,7 @@ describe('Manage order aggregate', () => {
         const order: Order = Order.create(items, shippingAddress, DiscountCodes.DISCOUNT20);
 
         const orderPersistenceModel = order.toPersistence();
-        const orderDomainModel = order.toDomain(orderPersistenceModel);
+        const orderDomainModel = Order.toDomain(orderPersistenceModel);
 
         expect(orderDomainModel.id.value).toEqual(orderPersistenceModel._id);
         expect(orderDomainModel.items.map(item => { return { productId: item.productId.value, quantity: item.quantity.value, price: item.price.value } })).toStrictEqual(orderPersistenceModel.items.map(item => { return { productId: item.productId, quantity: item.quantity, price: item.price } }));
