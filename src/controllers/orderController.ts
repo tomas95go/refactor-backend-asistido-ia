@@ -2,35 +2,51 @@ import { Request, Response } from 'express';
 import { OrderModel } from '../models/orderModel';
 import {OrderStatus} from "../order/domain/constant/status";
 import {DiscountCodes} from "../order/domain/constant/discount-code";
+import {OrderLine} from "../order/domain/value-object/order-line";
+import {Id} from "../order/domain/value-object/id";
+import {PositiveNumber} from "../order/domain/value-object/positive-number";
+import {Address} from "../order/domain/value-object/address";
+import {Order} from "../order/domain/aggregate/order";
+import {DomainError} from "../order/domain/error/error";
 
 // Create a new order
 export const createOrder = async (req: Request, res: Response) => {
-    console.log("POST /orders");
-    const { items, discountCode, shippingAddress } = req.body;
+    try {
+        console.log("POST /orders");
+        const {items, discountCode, shippingAddress} = req.body;
 
-    if (!items || !Array.isArray(items) || items.length === 0) {
-        return res.send('The order must have at least one item');
+        const order: Order = Order.create(
+            items.map((item: { productId: string, quantity: number, price: number }) => {
+                return OrderLine.create(
+                    Id.from(item.productId),
+                    PositiveNumber.create(item.quantity),
+                    PositiveNumber.create(item.price)
+                );
+            }),
+            Address.create(shippingAddress),
+            discountCode
+        );
+
+        const orderPersistence = order.toPersistence();
+
+        const newOrder = new OrderModel({
+            _id: orderPersistence._id,
+            items: orderPersistence.items,
+            status: orderPersistence.status,
+            discountCode: orderPersistence.discountCode,
+            shippingAddress: orderPersistence.shippingAddress,
+            total: orderPersistence.total,
+        });
+
+        await newOrder.save();
+        res.send(`Order created with total: ${orderPersistence.total}`);
+    } catch (error) {
+        if(error instanceof DomainError) {
+            return res.send(error.message);
+        }
+        res.send('Unexpected error');
     }
-
-    let total = 0;
-    for (const item of items) {
-        total += (item.price || 0) * (item.quantity || 0);
-    }
-
-    if (discountCode === DiscountCodes.DISCOUNT20) {
-        total = total * 0.8;
-    }
-
-    const newOrder = new OrderModel({
-        items,
-        discountCode,
-        shippingAddress,
-        total,
-    });
-
-    await newOrder.save();
-    res.send(`Order created with total: ${total}`);
-};
+}
 
 // Get all orders
 export const getAllOrders = async (_req: Request, res: Response) => {

@@ -47,7 +47,7 @@ export class Order {
 
     toPersistence() {
         return {
-            id: this.id.value,
+            _id: this.id.value,
             items: this.items.map(item => {
                 return {
                     productId: item.productId.value,
@@ -57,7 +57,8 @@ export class Order {
             }),
             shippingAddress: this.shippingAddress.value,
             status: this.status,
-            discountCode: this.discountCode
+            discountCode: this.discountCode,
+            total: this.calculateTotal().value
         }
     }
 }
