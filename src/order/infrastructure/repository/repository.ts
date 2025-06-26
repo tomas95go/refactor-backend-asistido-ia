@@ -26,7 +26,9 @@ export class OrderMongoRepository implements OrderRepository {
     }
 
     async findAll(): Promise<Order[] | []> {
-        return [];
+        const MongooseOrderModel = this.mongooseModel();
+        const persistedOrders: PersistOrderModel[] | [] = await MongooseOrderModel.find();
+        return persistedOrders.map(persistedOrder => Order.toDomain(persistedOrder));
     }
 
     async save(order: Order): Promise<void> {
