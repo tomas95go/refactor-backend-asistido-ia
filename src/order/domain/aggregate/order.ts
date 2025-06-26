@@ -6,7 +6,7 @@ import {DiscountCode, DiscountCodes} from "../constant/discount-code";
 import {DomainError} from "../error/error";
 import {PositiveNumber} from "../value-object/positive-number";
 
-type PersistOrderModel = {
+export type PersistOrderModel = {
     _id: string;
     items: { productId: string; quantity: number; price: number; }[];
     shippingAddress: string;
