@@ -1,6 +1,6 @@
 import mongoose, { Document, Schema, Model } from 'mongoose';
-import {OrderStatus} from "../order/domain/constant/status";
-import {DiscountCode} from "../order/domain/constant/discount-code";
+import {OrderStatus} from "../../domain/constant/status";
+import {DiscountCode} from "../../domain/constant/discount-code";
 
 export interface IOrder extends Document {
     _id: string;

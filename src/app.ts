@@ -1,6 +1,6 @@
 import express, { Express, Request, RequestHandler, Response } from 'express';
 import mongoose from 'mongoose';
-import { completeOrder, createOrder, deleteOrder, getAllOrders, updateOrder } from './controllers/orderController';
+import { completeOrder, createOrder, deleteOrder, getAllOrders, updateOrder } from './order/infrastructure/controllers/orderController';
 
 /**
  * @param serverPort

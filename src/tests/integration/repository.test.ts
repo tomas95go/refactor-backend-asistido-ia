@@ -2,32 +2,9 @@ import {OrderLine} from "../../order/domain/value-object/order-line";
 import {Id} from "../../order/domain/value-object/id";
 import {PositiveNumber} from "../../order/domain/value-object/positive-number";
 import {Address} from "../../order/domain/value-object/address";
-import {Order, PersistOrderModel} from "../../order/domain/aggregate/order";
-import {OrderRepository} from "../../order/domain/repository/repository";
-import {OrderModel} from "../../models/orderModel";
+import {Order} from "../../order/domain/aggregate/order";
 import mongoose from "mongoose";
-
-class OrderMongoRepository implements OrderRepository {
-    async findById(id: Id): Promise<Order | null> {
-        const order: PersistOrderModel | null = await OrderModel.findById(id.value);
-        if (!order) {
-            return null;
-        }
-        return Order.toDomain(order);
-    }
-
-    async findAll(): Promise<Order[] | []> {
-        return [];
-    }
-
-    async save(order: Order): Promise<void> {
-        const persistenceModel = order.toPersistence();
-        const mongoOrder = new OrderModel({...persistenceModel});
-        await mongoOrder.save();
-    }
-
-    async delete(id: Id): Promise<void> {}
-}
+import {OrderMongoRepository} from "../../order/infrastructure/repository/repository";
 
 describe('Order repository methods', () => {
 

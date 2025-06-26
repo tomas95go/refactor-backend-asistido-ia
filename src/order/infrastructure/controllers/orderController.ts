@@ -1,13 +1,13 @@
 import { Request, Response } from 'express';
 import { OrderModel } from '../models/orderModel';
-import {OrderStatus} from "../order/domain/constant/status";
-import {DiscountCode, DiscountCodes} from "../order/domain/constant/discount-code";
-import {OrderLine} from "../order/domain/value-object/order-line";
-import {Id} from "../order/domain/value-object/id";
-import {PositiveNumber} from "../order/domain/value-object/positive-number";
-import {Address} from "../order/domain/value-object/address";
-import {Order} from "../order/domain/aggregate/order";
-import {DomainError} from "../order/domain/error/error";
+import {OrderStatus} from "../../domain/constant/status";
+import {DiscountCode, DiscountCodes} from "../../domain/constant/discount-code";
+import {OrderLine} from "../../domain/value-object/order-line";
+import {Id} from "../../domain/value-object/id";
+import {PositiveNumber} from "../../domain/value-object/positive-number";
+import {Address} from "../../domain/value-object/address";
+import {Order} from "../../domain/aggregate/order";
+import {DomainError} from "../../domain/error/error";
 
 // Create a new order
 export const createOrder = async (req: Request, res: Response) => {
