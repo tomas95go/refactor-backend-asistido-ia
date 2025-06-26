@@ -7,10 +7,11 @@ import mongoose from "mongoose";
 import {OrderMongoRepository} from "../../order/infrastructure/repository/repository";
 
 describe('Order repository methods', () => {
+    let repository: OrderMongoRepository;
 
     beforeAll(async () => {
         const DATABASE_CONNECTION_STRING = 'mongodb://localhost:27017/db_orders_repository_test';
-        await mongoose.connect(DATABASE_CONNECTION_STRING);
+        repository = await OrderMongoRepository.create(DATABASE_CONNECTION_STRING);
         await mongoose.connection.dropDatabase();
     });
 
@@ -30,7 +31,6 @@ describe('Order repository methods', () => {
        const items: OrderLine[] = itemsPrimitives.map(item => OrderLine.create(Id.from(item.productId), PositiveNumber.create(item.quantity), PositiveNumber.create(item.price)));
        const shippingAddress: Address = Address.create(addressPrimitive);
        const order: Order = Order.create(items, shippingAddress);
-       const repository = new OrderMongoRepository();
        //Act
        await repository.save(order);
        //Assert

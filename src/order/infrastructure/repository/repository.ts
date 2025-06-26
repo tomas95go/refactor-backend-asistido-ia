@@ -1,11 +1,24 @@
 import {OrderRepository} from "../../domain/repository/repository";
 import {Id} from "../../domain/value-object/id";
 import {Order, PersistOrderModel} from "../../domain/aggregate/order";
-import {OrderModel} from "../models/orderModel";
+import {MongooseOrder, OrderSchema} from "../models/orderModel";
+import mongoose from "mongoose";
+import {Mongoose} from "mongoose";
 
 export class OrderMongoRepository implements OrderRepository {
+    constructor(private mongoClient: Mongoose) {}
+
+    static async create(dbUrl: string): Promise<OrderMongoRepository> {
+        return new OrderMongoRepository(await mongoose.connect(dbUrl));
+    }
+
+    private mongooseModel() {
+        return this.mongoClient.model<MongooseOrder>('Order', OrderSchema);
+    }
+
     async findById(id: Id): Promise<Order | null> {
-        const order: PersistOrderModel | null = await OrderModel.findById(id.value);
+        const MongooseOrderModel = this.mongooseModel();
+        const order: PersistOrderModel | null = await MongooseOrderModel.findById(id.value);
         if (!order) {
             return null;
         }
@@ -17,8 +30,9 @@ export class OrderMongoRepository implements OrderRepository {
     }
 
     async save(order: Order): Promise<void> {
+        const MongooseOrderModel = this.mongooseModel();
         const persistenceModel = order.toPersistence();
-        const mongoOrder = new OrderModel({...persistenceModel});
+        const mongoOrder = new MongooseOrderModel({...persistenceModel});
         await mongoOrder.save();
     }
 

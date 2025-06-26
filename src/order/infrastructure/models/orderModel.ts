@@ -2,7 +2,7 @@ import mongoose, { Document, Schema, Model } from 'mongoose';
 import {OrderStatus} from "../../domain/constant/status";
 import {DiscountCode} from "../../domain/constant/discount-code";
 
-export interface IOrder extends Document {
+export interface MongooseOrder extends Document {
     _id: string;
     items: {
         productId: string;
@@ -15,7 +15,7 @@ export interface IOrder extends Document {
     total?: number;
 }
 
-const OrderSchema: Schema = new Schema({
+export const OrderSchema: Schema = new Schema({
     _id: { type: String, default: () => new mongoose.Types.ObjectId().toString() },
     items: [
         {
@@ -30,4 +30,4 @@ const OrderSchema: Schema = new Schema({
     total: { type: Number, default: 0 },
 });
 
-export const OrderModel= mongoose.model<IOrder>('Order', OrderSchema);
+export const OrderModel= mongoose.model<MongooseOrder>('Order', OrderSchema);
