@@ -56,4 +56,25 @@ describe('Order repository methods', () => {
         const savedOrders: Order[] | [] = await repository.findAll();
         expect(savedOrders).toHaveLength(1);
     });
+
+    it('Should delete a previously saved order', async () => {
+        //Arrange
+        const itemsPrimitives = [{
+            productId: '8259dff2-4bf5-41da-b9b4-010b76988b30',
+            price: 100,
+            quantity: 2
+        }];
+        const addressPrimitive = 'Avenida Siempreviva 100';
+        const items: OrderLine[] = itemsPrimitives.map(item => OrderLine.create(Id.from(item.productId), PositiveNumber.create(item.quantity), PositiveNumber.create(item.price)));
+        const shippingAddress: Address = Address.create(addressPrimitive);
+
+        const order: Order = Order.create(items, shippingAddress);
+
+        await repository.save(order);
+        //Act
+        await repository.delete(order.id);
+        //Assert
+        const savedOrders: Order[] | [] = await repository.findAll();
+        expect(savedOrders).toHaveLength(0);
+    });
 });
