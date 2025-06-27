@@ -34,7 +34,7 @@ describe('Order repository methods', () => {
        //Act
        await repository.save(order);
        //Assert
-       const savedOrder: Order | null = await repository.findById(order.id);
+       const savedOrder: Order | null = await repository.findById(Id.from(order.toPersistence()._id));
        expect(savedOrder?.toPersistence()).toEqual(order.toPersistence());
     });
 
@@ -72,7 +72,7 @@ describe('Order repository methods', () => {
 
         await repository.save(order);
         //Act
-        await repository.delete(order.id);
+        await repository.delete(Id.from(order.toPersistence()._id));
         //Assert
         const savedOrders: Order[] | [] = await repository.findAll();
         expect(savedOrders).toHaveLength(0);

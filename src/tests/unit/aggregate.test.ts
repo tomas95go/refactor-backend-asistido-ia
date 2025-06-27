@@ -18,7 +18,7 @@ describe('Manage order aggregate', () => {
         const shippingAddress: Address = Address.create('Avenida Siempreviva 100');
 
         const order: Order = Order.create(items, shippingAddress);
-        expect(order.id).toBeDefined();
+        expect(Id.from(order.toPersistence()._id)).toBeDefined();
         expect(order.items).toBe(items);
         expect(order.toPersistence().shippingAddress).toBe(shippingAddress.value);
         //expect(order.status).toBe(OrderStatus.Created);
@@ -36,7 +36,7 @@ describe('Manage order aggregate', () => {
         const discountCode: DiscountCode = DiscountCodes.DISCOUNT20;
 
         const order: Order = Order.create(items, shippingAddress, discountCode);
-        expect(order.id).toBeDefined();
+        expect(Id.from(order.toPersistence()._id)).toBeDefined();
         expect(order.items).toBe(items);
         expect(order.toPersistence().shippingAddress).toBe(shippingAddress.value);
         expect(order.toPersistence().discountCode).toBe(discountCode);
@@ -138,7 +138,7 @@ describe('Manage order aggregate', () => {
         const orderPersistenceModel = order.toPersistence();
 
         expect(orderPersistenceModel).toStrictEqual({
-            _id: Id.from(order.id.value).value,
+            _id: Id.from(order.toPersistence()._id).value,
             items: itemsPrimitives,
             shippingAddress: 'Avenida Siempreviva 100',
             status: OrderStatus.Created,
@@ -162,7 +162,7 @@ describe('Manage order aggregate', () => {
         const orderPersistenceModel = order.toPersistence();
         const orderDomainModel = Order.toDomain(orderPersistenceModel);
 
-        expect(orderDomainModel.id.value).toEqual(orderPersistenceModel._id);
+        expect(Id.from(order.toPersistence()._id).value).toEqual(orderPersistenceModel._id);
         expect(orderDomainModel.items.map(item => { return { productId: item.productId.value, quantity: item.quantity.value, price: item.price.value } })).toStrictEqual(orderPersistenceModel.items.map(item => { return { productId: item.productId, quantity: item.quantity, price: item.price } }));
         expect(orderDomainModel.toPersistence().shippingAddress).toEqual(orderPersistenceModel.shippingAddress);
         expect(orderDomainModel.toPersistence().discountCode).toEqual(orderPersistenceModel.discountCode);

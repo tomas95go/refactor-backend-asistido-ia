@@ -16,7 +16,7 @@ export type PersistOrderModel = {
 
 export class Order {
     private constructor(
-        readonly id: Id,
+        private id: Id,
         readonly items: OrderLine[],
         private shippingAddress: Address,
         private status: OrderStatus,
