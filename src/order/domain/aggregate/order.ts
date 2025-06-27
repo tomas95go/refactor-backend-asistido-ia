@@ -18,7 +18,7 @@ export class Order {
     private constructor(
         readonly id: Id,
         readonly items: OrderLine[],
-        readonly shippingAddress: Address,
+        private shippingAddress: Address,
         private status: OrderStatus,
         readonly discountCode?: DiscountCode
     ) {}
@@ -77,5 +77,9 @@ export class Order {
             discountCode: this.discountCode,
             total: this.calculateTotal().value
         }
+    }
+
+    updateShippingAddress(address: Address): void {
+        this.shippingAddress = address;
     }
 }
