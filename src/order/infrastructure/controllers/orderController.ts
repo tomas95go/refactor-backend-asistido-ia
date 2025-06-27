@@ -129,6 +129,14 @@ export const completeOrder = async (req: Request, res: Response) => {
 // Delete order
 export const deleteOrder = async (req: Request, res: Response) => {
     console.log("DELETE /orders/:id");
-    await OrderModel.findByIdAndDelete(req.params.id);
+    const repository: OrderRepository = await Factory.getOrderRepository();
+
+    const order: Order | null = await repository.findById(Id.from(req.params.id));
+
+    if (!order) {
+        return res.send('Order not found');
+    }
+
+    await repository.delete(Id.from(req.params.id));
     res.send('Order deleted');
 };
