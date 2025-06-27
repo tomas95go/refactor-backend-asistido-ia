@@ -54,42 +54,32 @@ export const getAllOrders = async (_req: Request, res: Response) => {
 // Update order
 export const updateOrder = async (req: Request, res: Response) => {
     console.log("PUT /orders/:id");
-    const { id } = req.params;
-    const { status, shippingAddress, discountCode } = req.body;
+    const {id} = req.params;
+    const {status, shippingAddress, discountCode} = req.body;
 
-    const order = await OrderModel.findById(id);
-    if (!order) {
+    const repository: OrderRepository = await Factory.getOrderRepository();
+
+    const persistedOrder: Order | null = await repository.findById(Id.from(id));
+
+    if (!persistedOrder) {
         return res.send('Order not found');
     }
 
     if (shippingAddress) {
-        order.shippingAddress = shippingAddress;
-    }
-
-    if (status) {
-        if (status === OrderStatus.Completed && order.items.length === 0) {
-            return res.send('Cannot complete an order without items');
-        }
-        order.status = status;
+        persistedOrder.updateShippingAddress(Address.create(shippingAddress));
     }
 
     if (discountCode) {
-        order.discountCode = discountCode;
-        if (discountCode === DiscountCodes.DISCOUNT20) {
-            let newTotal = 0;
-            for (const item of order.items) {
-                newTotal += (item.price || 0) * (item.quantity || 0);
-            }
-            newTotal *= 0.8;
-            order.total = newTotal;
-        } else {
-            console.log('Invalid or not implemented discount code');
-        }
+        persistedOrder.updateDiscountCode(discountCode);
     }
 
-    await order.save();
-    res.send(`Order updated. New status: ${order.status}`);
-};
+    if(status) {
+        persistedOrder.complete();
+    }
+
+    await repository.save(persistedOrder);
+    res.send(`Order updated. New status: ${persistedOrder.toPersistence().status}`);
+}
 
 // Complete order
 export const completeOrder = async (req: Request, res: Response) => {
