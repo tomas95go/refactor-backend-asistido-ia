@@ -29,19 +29,10 @@ export const createOrder = async (req: Request, res: Response) => {
             discountCode
         );
 
-        const orderPersistence = order.toPersistence();
+        const repository: OrderRepository = await Factory.getOrderRepository();
 
-        const newOrder = new OrderModel({
-            _id: orderPersistence._id,
-            items: orderPersistence.items,
-            status: orderPersistence.status,
-            discountCode: orderPersistence.discountCode,
-            shippingAddress: orderPersistence.shippingAddress,
-            total: orderPersistence.total,
-        });
-
-        await newOrder.save();
-        res.send(`Order created with total: ${orderPersistence.total}`);
+        await repository.save(order);
+        res.send(`Order created with total: ${order.toPersistence().total}`);
     } catch (error) {
         if(error instanceof DomainError) {
             return res.send(error.message);
