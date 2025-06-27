@@ -32,10 +32,14 @@ export class OrderMongoRepository implements OrderRepository {
     }
 
     async save(order: Order): Promise<void> {
-        const MongooseOrderModel = this.mongooseModel();
         const persistenceModel = order.toPersistence();
-        const mongoOrder = new MongooseOrderModel({...persistenceModel});
-        await mongoOrder.save();
+        await this.mongooseModel().findByIdAndUpdate({ _id: order.toPersistence()._id },{
+            items: persistenceModel.items,
+            shippingAddress: persistenceModel.shippingAddress,
+            status: persistenceModel.status,
+            discountCode: persistenceModel.discountCode,
+            total: persistenceModel.total,
+        }, { upsert: true });
     }
 
     async delete(id: Id): Promise<void> {
