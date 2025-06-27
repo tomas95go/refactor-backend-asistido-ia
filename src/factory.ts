@@ -2,10 +2,6 @@ import {OrderRepository} from "./order/domain/repository/repository";
 import dotenv from "dotenv";
 import {OrderMongoRepository} from "./order/infrastructure/repository/repository";
 
-dotenv.config({
-    path: process.env.NODE_ENV === 'test' ? '.env.test' : '.env',
-});
-
 export class Factory {
     private static OrderRepository: OrderRepository;
 

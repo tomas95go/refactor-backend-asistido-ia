@@ -8,6 +8,8 @@ import {PositiveNumber} from "../../domain/value-object/positive-number";
 import {Address} from "../../domain/value-object/address";
 import {Order} from "../../domain/aggregate/order";
 import {DomainError} from "../../domain/error/error";
+import {Factory} from "../../../factory";
+import {OrderRepository} from "../../domain/repository/repository";
 
 // Create a new order
 export const createOrder = async (req: Request, res: Response) => {
@@ -51,8 +53,11 @@ export const createOrder = async (req: Request, res: Response) => {
 // Get all orders
 export const getAllOrders = async (_req: Request, res: Response) => {
     console.log("GET /orders");
-    const orders = await OrderModel.find();
-    res.json(orders);
+
+    const repository: OrderRepository = await Factory.getOrderRepository();
+    const orders: Order[] | []= await repository.findAll();
+    const ordersDto = orders.map(order => order.toPersistence());
+    res.json(ordersDto);
 };
 
 // Update order
