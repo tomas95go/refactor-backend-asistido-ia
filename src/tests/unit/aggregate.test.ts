@@ -39,7 +39,7 @@ describe('Manage order aggregate', () => {
         expect(order.id).toBeDefined();
         expect(order.items).toBe(items);
         expect(order.toPersistence().shippingAddress).toBe(shippingAddress.value);
-        expect(order.discountCode).toBe(discountCode);
+        expect(order.toPersistence().discountCode).toBe(discountCode);
         //expect(order.status).toBe(OrderStatus.Created);
     });
 
@@ -105,6 +105,24 @@ describe('Manage order aggregate', () => {
         expect(order.toPersistence().shippingAddress).toBe('Ocean View 101');
     });
 
+    it(`Should change the order's discount code`, () => {
+        const itemsPrimitives = [{
+            productId: '8259dff2-4bf5-41da-b9b4-010b76988b30',
+            price: 100,
+            quantity: 2
+        }];
+
+        const items: OrderLine[] = itemsPrimitives.map(item => OrderLine.create(Id.from(item.productId), PositiveNumber.create(item.quantity), PositiveNumber.create(item.price)));
+        const shippingAddress: Address = Address.create('Avenida Siempreviva 100');
+
+        const order: Order = Order.create(items, shippingAddress);
+
+        order.updateDiscountCode(DiscountCodes.DISCOUNT20);
+
+        expect(order.toPersistence().discountCode).toBe(DiscountCodes.DISCOUNT20);
+        expect(order.toPersistence().total).toBe(160);
+    });
+
     it('Should convert order domain model to persistence model', () => {
         const itemsPrimitives = [{
             productId: '8259dff2-4bf5-41da-b9b4-010b76988b30',
@@ -147,7 +165,7 @@ describe('Manage order aggregate', () => {
         expect(orderDomainModel.id.value).toEqual(orderPersistenceModel._id);
         expect(orderDomainModel.items.map(item => { return { productId: item.productId.value, quantity: item.quantity.value, price: item.price.value } })).toStrictEqual(orderPersistenceModel.items.map(item => { return { productId: item.productId, quantity: item.quantity, price: item.price } }));
         expect(orderDomainModel.toPersistence().shippingAddress).toEqual(orderPersistenceModel.shippingAddress);
-        expect(orderDomainModel.discountCode).toEqual(orderPersistenceModel.discountCode);
+        expect(orderDomainModel.toPersistence().discountCode).toEqual(orderPersistenceModel.discountCode);
 
     });
 

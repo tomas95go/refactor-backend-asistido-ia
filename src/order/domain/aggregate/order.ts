@@ -20,7 +20,7 @@ export class Order {
         readonly items: OrderLine[],
         private shippingAddress: Address,
         private status: OrderStatus,
-        readonly discountCode?: DiscountCode
+        private discountCode?: DiscountCode
     ) {}
 
     static create(items: OrderLine[], shippingAddress: Address, discountCode?: DiscountCode): Order {
@@ -81,5 +81,9 @@ export class Order {
 
     updateShippingAddress(address: Address): void {
         this.shippingAddress = address;
+    }
+
+    updateDiscountCode(discountCode: DiscountCodes) {
+        this.discountCode = discountCode;
     }
 }
