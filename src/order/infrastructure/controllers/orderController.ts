@@ -97,26 +97,18 @@ export const completeOrder = async (req: Request, res: Response) => {
         console.log("POST /orders/:id/complete");
         const { id } = req.params;
 
-        const orderDocument = await OrderModel.findById(id);
+        const repository: OrderRepository = await Factory.getOrderRepository();
 
-        if (!orderDocument) {
+        const persistedOrder: Order | null = await repository.findById(Id.from(req.params.id));
+
+        if (!persistedOrder) {
             return res.send('Order not found to complete');
         }
 
-        const persistedOrder = {
-            _id: orderDocument._id,
-            items: orderDocument.items.map(item => { return { productId: item.productId, quantity: item.quantity, price: item.price } },),
-            shippingAddress: orderDocument.shippingAddress,
-            status: orderDocument.status as OrderStatus,
-            discountCode: orderDocument.discountCode
-        }
-
-        const order: Order = Order.toDomain(persistedOrder);
+        const order: Order = Order.toDomain(persistedOrder.toPersistence());
         order.complete();
 
-        const orderToPersist = order.toPersistence();
-        const orderDocumentToPersist = new OrderModel({...orderToPersist});
-        await OrderModel.findOneAndReplace({_id: id}, orderDocumentToPersist, { new: true });
+        await repository.save(order);
         res.send(`Order with id ${id} completed`);
     } catch (error) {
         if(error instanceof DomainError) {
