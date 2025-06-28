@@ -21,13 +21,13 @@ export class OrderController {
             res.send('Unexpected error');
         }
     }
-}
 
-export const getAllOrders = async (_req: Request, res: Response) => {
-    const repository: OrderRepository = await Factory.getOrderRepository();
-    const ordersDto: OrderDto[] = await new OrderUseCase(repository).getAllOrdersUseCase();
-    res.json(ordersDto);
-};
+    async getAllOrders(req: Request, res: Response) {
+        const repository: OrderRepository = await Factory.getOrderRepository();
+        const ordersDto: OrderDto[] = await new OrderUseCase(repository).getAllOrdersUseCase();
+        res.json(ordersDto);
+    }
+}
 
 export const updateOrder = async (req: Request, res: Response) => {
     const repository: OrderRepository = await Factory.getOrderRepository();
