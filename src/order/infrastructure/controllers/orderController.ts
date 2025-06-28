@@ -27,23 +27,23 @@ export class OrderController {
         const ordersDto: OrderDto[] = await new OrderUseCase(repository).getAllOrdersUseCase();
         res.json(ordersDto);
     }
-}
 
-export const updateOrder = async (req: Request, res: Response) => {
-    const repository: OrderRepository = await Factory.getOrderRepository();
+    async updateOrder(req: Request, res: Response) {
+        const repository: OrderRepository = await Factory.getOrderRepository();
 
-    const {id} = req.params;
-    const {status, shippingAddress, discountCode} = req.body;
+        const {id} = req.params;
+        const {status, shippingAddress, discountCode} = req.body;
 
-    const dto = {
-        id,
-        status,
-        shippingAddress,
-        discountCode,
-    };
+        const dto = {
+            id,
+            status,
+            shippingAddress,
+            discountCode,
+        };
 
-    const updatedOrder = await new OrderUseCase(repository).updateOrderUseCase(dto);
-    res.send(updatedOrder);
+        const updatedOrder = await new OrderUseCase(repository).updateOrderUseCase(dto);
+        res.send(updatedOrder);
+    }
 }
 
 export const completeOrder = async (req: Request, res: Response) => {

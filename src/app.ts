@@ -3,8 +3,7 @@ import mongoose from 'mongoose';
 import {
     completeOrder,
     deleteOrder,
-    OrderController,
-    updateOrder
+    OrderController
 } from './order/infrastructure/controllers/orderController';
 
 /**
@@ -24,7 +23,7 @@ export function createServer(serverPort: string, databaseConnectionString: strin
 
     app.post('/orders', ((req: Request, res: Response) => orderController.createOrder(req, res)) as RequestHandler);
     app.get('/orders', ((req: Request, res: Response) => orderController.getAllOrders(req, res)) as RequestHandler);
-    app.put('/orders/:id', ((req: Request, res: Response) => updateOrder(req, res)) as RequestHandler);
+    app.put('/orders/:id', ((req: Request, res: Response) => orderController.updateOrder(req, res)) as RequestHandler);
     app.post('/orders/:id/complete', ((req: Request, res: Response) => completeOrder(req, res)) as RequestHandler);
     app.delete('/orders/:id', ((req: Request, res: Response) => deleteOrder(req, res)) as RequestHandler);
     app.get('/', ((req: Request, res: Response) => {
