@@ -7,14 +7,8 @@ import {OrderUseCase} from "./order/application/order";
 
 /**
  * @param serverPort
- * @param databaseConnectionString
  */
-export async function createServer(serverPort: string, databaseConnectionString: string) {
-    mongoose
-        .connect(databaseConnectionString)
-        .then(() => console.log('Connected to MongoDB'))
-        .catch((err) => console.error('Error connecting to MongoDB:', err));
-
+export async function createServer(serverPort: string) {
     const app: Express = express();
     app.use(express.json());
 

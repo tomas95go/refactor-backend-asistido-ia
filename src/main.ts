@@ -15,4 +15,4 @@ if(!DATABASE_CONNECTION_STRING || !SERVER_PORT) {
     process.exit(1);
 }
 
-createServer(SERVER_PORT, DATABASE_CONNECTION_STRING).then(server => server);
+createServer(SERVER_PORT).then(server => server);

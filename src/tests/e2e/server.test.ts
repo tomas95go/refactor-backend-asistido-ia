@@ -20,7 +20,7 @@ describe('Status endpoint', () => {
             process.exit(1);
         }
 
-        server = await createServer(SERVER_PORT, DATABASE_CONNECTION_STRING)
+        server = await createServer(SERVER_PORT)
     });
 
     afterAll(() => {
@@ -67,7 +67,7 @@ describe('Order management module', () => {
             process.exit(1);
         }
 
-        server = await createServer(SERVER_PORT, DATABASE_CONNECTION_STRING)
+        server = await createServer(SERVER_PORT)
     });
 
     afterAll(() => {
