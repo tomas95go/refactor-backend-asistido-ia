@@ -11,7 +11,20 @@ import {DomainError} from "../../domain/error/error";
 import {Factory} from "../../../factory";
 import {OrderRepository} from "../../domain/repository/repository";
 
-async function createOrderUseCase(dto: { items: { productId: string, quantity: number, price: number }[], shippingAddress: string, discountCode?: DiscountCodes }, repository: OrderRepository): Promise<string> {
+type RequestOrder = {
+    items: { productId: string, quantity: number, price: number }[],
+    shippingAddress: string,
+    discountCode?: DiscountCodes
+};
+
+type RequestOrderUpdate = {
+    id: string,
+    status: OrderStatus,
+    shippingAddress: string,
+    discountCode: DiscountCodes
+};
+
+async function createOrderUseCase(dto: RequestOrder, repository: OrderRepository): Promise<string> {
     const { items, shippingAddress, discountCode } = dto;
 
     const order: Order = Order.create(
@@ -31,14 +44,12 @@ async function createOrderUseCase(dto: { items: { productId: string, quantity: n
     return `Order created with total: ${order.toPersistence().total}`;
 }
 
-// ToDo: Introduce a type for api order response
 async function getAllOrdersUseCase(repository: OrderRepository) {
     const orders: Order[] | [] = await repository.findAll();
     return orders.map(order => order.toPersistence());
 }
 
-// ToDo: introduce a type for update dto
-async function updateOrderUseCase(dto: { id: string, status: string, shippingAddress: string, discountCode: DiscountCodes }, repository: OrderRepository): Promise<string> {
+async function updateOrderUseCase(dto: RequestOrderUpdate, repository: OrderRepository): Promise<string> {
     const { id, status, shippingAddress, discountCode } = dto;
 
     const persistedOrder: Order | null = await repository.findById(Id.from(id));
