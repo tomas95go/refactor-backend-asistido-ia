@@ -6,12 +6,16 @@ import {OrderRepository} from "../../domain/repository/repository";
 import {OrderUseCase} from "../../application/order";
 
 export class OrderController {
-    async createOrder(req: Request, res: Response) {
-        const repository: OrderRepository = await Factory.getOrderRepository();
+    /**
+     * @param req
+     * @param res
+     * @param orderUseCase
+     */
+    async createOrder(req: Request, res: Response, orderUseCase: OrderUseCase) {
         try {
             const requestOrder = req.body;
 
-            const createdOrder = await new OrderUseCase(repository).createOrderUseCase(requestOrder);
+            const createdOrder = await orderUseCase.createOrderUseCase(requestOrder);
 
             res.send(createdOrder);
         } catch (error) {
@@ -22,15 +26,22 @@ export class OrderController {
         }
     }
 
-    async getAllOrders(req: Request, res: Response) {
-        const repository: OrderRepository = await Factory.getOrderRepository();
-        const ordersDto: OrderDto[] = await new OrderUseCase(repository).getAllOrdersUseCase();
+    /**
+     * @param req
+     * @param res
+     * @param orderUseCase
+     */
+    async getAllOrders(req: Request, res: Response, orderUseCase: OrderUseCase) {
+        const ordersDto: OrderDto[] = await orderUseCase.getAllOrdersUseCase();
         res.json(ordersDto);
     }
 
-    async updateOrder(req: Request, res: Response) {
-        const repository: OrderRepository = await Factory.getOrderRepository();
-
+    /**
+     * @param req
+     * @param res
+     * @param orderUseCase
+     */
+    async updateOrder(req: Request, res: Response, orderUseCase: OrderUseCase) {
         const {id} = req.params;
         const {status, shippingAddress, discountCode} = req.body;
 
@@ -41,16 +52,20 @@ export class OrderController {
             discountCode,
         };
 
-        const updatedOrder = await new OrderUseCase(repository).updateOrderUseCase(dto);
+        const updatedOrder = await orderUseCase.updateOrderUseCase(dto);
         res.send(updatedOrder);
     }
 
-    async completeOrder(req: Request, res: Response) {
+    /**
+     * @param req
+     * @param res
+     * @param orderUseCase
+     */
+    async completeOrder(req: Request, res: Response, orderUseCase: OrderUseCase) {
         try {
             const {id} = req.params;
 
-            const repository: OrderRepository = await Factory.getOrderRepository();
-            const completedOrder = await new OrderUseCase(repository).completeOrderUseCase(id);
+            const completedOrder = await orderUseCase.completeOrderUseCase(id);
 
             res.send(completedOrder);
         } catch (error) {
@@ -61,12 +76,15 @@ export class OrderController {
         }
     }
 
-    async deleteOrder(req: Request, res: Response) {
-        const repository: OrderRepository = await Factory.getOrderRepository();
-
+    /**
+     * @param req
+     * @param res
+     * @param orderUseCase
+     */
+    async deleteOrder(req: Request, res: Response, orderUseCase: OrderUseCase) {
         const {id} = req.params;
 
-        const deletedOrder = await new OrderUseCase(repository).deleteOrderUseCase(id);
+        const deletedOrder = await orderUseCase.deleteOrderUseCase(id);
         res.send(deletedOrder);
     }
 }
