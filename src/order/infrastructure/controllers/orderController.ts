@@ -11,28 +11,34 @@ import {DomainError} from "../../domain/error/error";
 import {Factory} from "../../../factory";
 import {OrderRepository} from "../../domain/repository/repository";
 
+async function createOrderUseCase(dto: { items: any, shippingAddress: string, discountCode?: DiscountCode }, repository: OrderRepository): Promise<string> {
+    const { items, shippingAddress, discountCode } = dto;
+
+    const order: Order = Order.create(
+        items.map((item: { productId: string, quantity: number, price: number }) => {
+            return OrderLine.create(
+                Id.from(item.productId),
+                PositiveNumber.create(item.quantity),
+                PositiveNumber.create(item.price)
+            );
+        }),
+        Address.create(shippingAddress),
+        discountCode
+    );
+
+    await repository.save(order);
+
+    return `Order created with total: ${order.toPersistence().total}`;
+}
+
 // Create a new order
 export const createOrder = async (req: Request, res: Response) => {
+    const repository: OrderRepository = await Factory.getOrderRepository();
     try {
-        console.log("POST /orders");
-        const {items, discountCode, shippingAddress} = req.body;
+        const requestOrder = req.body;
 
-        const order: Order = Order.create(
-            items.map((item: { productId: string, quantity: number, price: number }) => {
-                return OrderLine.create(
-                    Id.from(item.productId),
-                    PositiveNumber.create(item.quantity),
-                    PositiveNumber.create(item.price)
-                );
-            }),
-            Address.create(shippingAddress),
-            discountCode
-        );
-
-        const repository: OrderRepository = await Factory.getOrderRepository();
-
-        await repository.save(order);
-        res.send(`Order created with total: ${order.toPersistence().total}`);
+        const createdOrder = await createOrderUseCase(requestOrder, repository);
+        res.send(createdOrder);
     } catch (error) {
         if(error instanceof DomainError) {
             return res.send(error.message);
