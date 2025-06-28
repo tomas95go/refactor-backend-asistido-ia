@@ -6,7 +6,7 @@ import {OrderController} from './order/infrastructure/controllers/orderControlle
  * @param serverPort
  * @param databaseConnectionString
  */
-export function createServer(serverPort: string, databaseConnectionString: string) {
+export async function createServer(serverPort: string, databaseConnectionString: string) {
     mongoose
         .connect(databaseConnectionString)
         .then(() => console.log('Connected to MongoDB'))

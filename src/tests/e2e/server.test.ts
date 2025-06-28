@@ -11,7 +11,7 @@ dotenv.config({ path: '.env.test' });
 describe('Status endpoint', () => {
     let server: Server;
 
-    beforeAll(() => {
+    beforeAll(async () => {
         const SERVER_PORT = process.env.SERVER_PORT;
         const DATABASE_CONNECTION_STRING = process.env.MONGO_CONNECTION_STRING;
 
@@ -20,7 +20,7 @@ describe('Status endpoint', () => {
             process.exit(1);
         }
 
-        server = createServer(SERVER_PORT, DATABASE_CONNECTION_STRING)
+        server = await createServer(SERVER_PORT, DATABASE_CONNECTION_STRING)
     });
 
     afterAll(() => {
@@ -58,7 +58,7 @@ describe('Order management module', () => {
 
     let server: Server;
 
-    beforeAll(() => {
+    beforeAll(async () => {
         const SERVER_PORT = process.env.SERVER_PORT;
         const DATABASE_CONNECTION_STRING = process.env.MONGO_CONNECTION_STRING;
 
@@ -67,7 +67,7 @@ describe('Order management module', () => {
             process.exit(1);
         }
 
-        server = createServer(SERVER_PORT, DATABASE_CONNECTION_STRING)
+        server = await createServer(SERVER_PORT, DATABASE_CONNECTION_STRING)
     });
 
     afterAll(() => {
