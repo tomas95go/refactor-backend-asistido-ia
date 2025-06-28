@@ -1,111 +1,17 @@
-import { Request, Response } from 'express';
-import { OrderModel } from '../models/orderModel';
-import {OrderStatus} from "../../domain/constant/status";
-import {DiscountCode, DiscountCodes} from "../../domain/constant/discount-code";
-import {OrderLine} from "../../domain/value-object/order-line";
-import {Id} from "../../domain/value-object/id";
-import {PositiveNumber} from "../../domain/value-object/positive-number";
-import {Address} from "../../domain/value-object/address";
-import {Order} from "../../domain/aggregate/order";
+import {Request, Response} from 'express';
+import {OrderDto} from "../../domain/aggregate/order";
 import {DomainError} from "../../domain/error/error";
 import {Factory} from "../../../factory";
 import {OrderRepository} from "../../domain/repository/repository";
-
-type RequestOrder = {
-    items: { productId: string, quantity: number, price: number }[],
-    shippingAddress: string,
-    discountCode?: DiscountCodes
-};
-
-type RequestOrderUpdate = {
-    id: string,
-    status: OrderStatus,
-    shippingAddress: string,
-    discountCode: DiscountCodes
-};
-
-async function createOrderUseCase(dto: RequestOrder, repository: OrderRepository): Promise<string> {
-    const { items, shippingAddress, discountCode } = dto;
-
-    const order: Order = Order.create(
-        items.map((item: { productId: string, quantity: number, price: number }) => {
-            return OrderLine.create(
-                Id.from(item.productId),
-                PositiveNumber.create(item.quantity),
-                PositiveNumber.create(item.price)
-            );
-        }),
-        Address.create(shippingAddress),
-        discountCode
-    );
-
-    await repository.save(order);
-
-    return `Order created with total: ${order.toDto().total}`;
-}
-
-async function getAllOrdersUseCase(repository: OrderRepository) {
-    const orders: Order[] | [] = await repository.findAll();
-    return orders.map(order => order.toDto());
-}
-
-async function updateOrderUseCase(dto: RequestOrderUpdate, repository: OrderRepository): Promise<string> {
-    const { id, status, shippingAddress, discountCode } = dto;
-
-    const persistedOrder: Order | null = await repository.findById(Id.from(id));
-
-    if (!persistedOrder) {
-        return 'Order not found';
-    }
-
-    if (shippingAddress) {
-        persistedOrder.updateShippingAddress(Address.create(shippingAddress));
-    }
-
-    if (discountCode) {
-        persistedOrder.updateDiscountCode(discountCode);
-    }
-
-    if (status) {
-        persistedOrder.complete();
-    }
-
-    await repository.save(persistedOrder);
-
-    return `Order updated. New status: ${persistedOrder.toDto().status}`;
-}
-
-async function completeOrderUseCase(id: string, repository: OrderRepository): Promise<string> {
-    const persistedOrder: Order | null = await repository.findById(Id.from(id));
-
-    if (!persistedOrder) {
-        throw new DomainError('Order not found to complete');
-    }
-
-    const order: Order = Order.toDomain(persistedOrder.toDto());
-    order.complete();
-
-    await repository.save(order);
-    return`Order with id ${id} completed`;
-}
-
-async function deleteOrderUseCase(id: string, repository: OrderRepository): Promise<string> {
-    const order: Order | null = await repository.findById(Id.from(id));
-
-    if (!order) {
-        return 'Order not found';
-    }
-
-    await repository.delete(Id.from(id));
-    return 'Order deleted';
-}
+import {OrderUseCase} from "../../application/order";
 
 export const createOrder = async (req: Request, res: Response) => {
     const repository: OrderRepository = await Factory.getOrderRepository();
     try {
         const requestOrder = req.body;
 
-        const createdOrder = await createOrderUseCase(requestOrder, repository);
+        const createdOrder = await new OrderUseCase(repository).createOrderUseCase(requestOrder);
+
         res.send(createdOrder);
     } catch (error) {
         if(error instanceof DomainError) {
@@ -117,7 +23,7 @@ export const createOrder = async (req: Request, res: Response) => {
 
 export const getAllOrders = async (_req: Request, res: Response) => {
     const repository: OrderRepository = await Factory.getOrderRepository();
-    const ordersDto = await getAllOrdersUseCase(repository);
+    const ordersDto: OrderDto[] = await new OrderUseCase(repository).getAllOrdersUseCase();
     res.json(ordersDto);
 };
 
@@ -134,7 +40,7 @@ export const updateOrder = async (req: Request, res: Response) => {
         discountCode,
     };
 
-    const updatedOrder = await updateOrderUseCase(dto, repository);
+    const updatedOrder = await new OrderUseCase(repository).updateOrderUseCase(dto);
     res.send(updatedOrder);
 }
 
@@ -143,7 +49,7 @@ export const completeOrder = async (req: Request, res: Response) => {
         const { id } = req.params;
 
         const repository: OrderRepository = await Factory.getOrderRepository();
-        const completedOrder = await completeOrderUseCase(id, repository);
+        const completedOrder = await new OrderUseCase(repository).completeOrderUseCase(id);
 
         res.send(completedOrder);
     } catch (error) {
@@ -156,6 +62,9 @@ export const completeOrder = async (req: Request, res: Response) => {
 
 export const deleteOrder = async (req: Request, res: Response) => {
     const repository: OrderRepository = await Factory.getOrderRepository();
-    const deletedOrder = await deleteOrderUseCase(req.params.id, repository);
+
+    const { id } = req.params;
+
+    const deletedOrder = await new OrderUseCase(repository).deleteOrderUseCase(id);
     res.send(deletedOrder);
 };
