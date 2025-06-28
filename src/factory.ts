@@ -1,6 +1,7 @@
 import {OrderRepository} from "./order/domain/repository/repository";
 import {OrderMongoRepository} from "./order/infrastructure/repository/repository";
 import {OrderUseCase} from "./order/application/order";
+import {OrderController} from "./order/infrastructure/controllers/orderController";
 
 export class Factory {
     private static OrderRepository: OrderRepository;
@@ -15,5 +16,9 @@ export class Factory {
 
     static async createOrderUseCase(): Promise<OrderUseCase> {
         return new OrderUseCase(await this.getOrderRepository());
+    }
+
+    static async createOrderController(): Promise<OrderController> {
+        return new OrderController(await this.createOrderUseCase());
     }
 }

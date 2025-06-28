@@ -6,16 +6,16 @@ import {OrderRepository} from "../../domain/repository/repository";
 import {OrderUseCase} from "../../application/order";
 
 export class OrderController {
+    constructor(private readonly orderUseCase: OrderUseCase) {}
     /**
      * @param req
      * @param res
-     * @param orderUseCase
      */
-    async createOrder(req: Request, res: Response, orderUseCase: OrderUseCase) {
+    async createOrder(req: Request, res: Response) {
         try {
             const requestOrder = req.body;
 
-            const createdOrder = await orderUseCase.createOrderUseCase(requestOrder);
+            const createdOrder = await this.orderUseCase.createOrderUseCase(requestOrder);
 
             res.send(createdOrder);
         } catch (error) {
@@ -29,19 +29,17 @@ export class OrderController {
     /**
      * @param req
      * @param res
-     * @param orderUseCase
      */
-    async getAllOrders(req: Request, res: Response, orderUseCase: OrderUseCase) {
-        const ordersDto: OrderDto[] = await orderUseCase.getAllOrdersUseCase();
+    async getAllOrders(req: Request, res: Response) {
+        const ordersDto: OrderDto[] = await this.orderUseCase.getAllOrdersUseCase();
         res.json(ordersDto);
     }
 
     /**
      * @param req
      * @param res
-     * @param orderUseCase
      */
-    async updateOrder(req: Request, res: Response, orderUseCase: OrderUseCase) {
+    async updateOrder(req: Request, res: Response) {
         const {id} = req.params;
         const {status, shippingAddress, discountCode} = req.body;
 
@@ -52,20 +50,19 @@ export class OrderController {
             discountCode,
         };
 
-        const updatedOrder = await orderUseCase.updateOrderUseCase(dto);
+        const updatedOrder = await this.orderUseCase.updateOrderUseCase(dto);
         res.send(updatedOrder);
     }
 
     /**
      * @param req
      * @param res
-     * @param orderUseCase
      */
-    async completeOrder(req: Request, res: Response, orderUseCase: OrderUseCase) {
+    async completeOrder(req: Request, res: Response) {
         try {
             const {id} = req.params;
 
-            const completedOrder = await orderUseCase.completeOrderUseCase(id);
+            const completedOrder = await this.orderUseCase.completeOrderUseCase(id);
 
             res.send(completedOrder);
         } catch (error) {
@@ -79,12 +76,11 @@ export class OrderController {
     /**
      * @param req
      * @param res
-     * @param orderUseCase
      */
-    async deleteOrder(req: Request, res: Response, orderUseCase: OrderUseCase) {
+    async deleteOrder(req: Request, res: Response) {
         const {id} = req.params;
 
-        const deletedOrder = await orderUseCase.deleteOrderUseCase(id);
+        const deletedOrder = await this.orderUseCase.deleteOrderUseCase(id);
         res.send(deletedOrder);
     }
 }
