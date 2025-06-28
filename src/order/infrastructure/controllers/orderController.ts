@@ -37,27 +37,6 @@ async function getAllOrdersUseCase(repository: OrderRepository) {
     return orders.map(order => order.toPersistence());
 }
 
-export const createOrder = async (req: Request, res: Response) => {
-    const repository: OrderRepository = await Factory.getOrderRepository();
-    try {
-        const requestOrder = req.body;
-
-        const createdOrder = await createOrderUseCase(requestOrder, repository);
-        res.send(createdOrder);
-    } catch (error) {
-        if(error instanceof DomainError) {
-            return res.send(error.message);
-        }
-        res.send('Unexpected error');
-    }
-}
-
-export const getAllOrders = async (_req: Request, res: Response) => {
-    const repository: OrderRepository = await Factory.getOrderRepository();
-    const ordersDto = await getAllOrdersUseCase(repository);
-    res.json(ordersDto);
-};
-
 // ToDo: introduce a type for update dto
 async function updateOrderUseCase(dto: { id: string, status: string, shippingAddress: string, discountCode: DiscountCodes }, repository: OrderRepository): Promise<string> {
     const { id, status, shippingAddress, discountCode } = dto;
@@ -85,6 +64,41 @@ async function updateOrderUseCase(dto: { id: string, status: string, shippingAdd
     return `Order updated. New status: ${persistedOrder.toPersistence().status}`;
 }
 
+async function completeOrderUseCase(id: string, repository: OrderRepository): Promise<string> {
+    const persistedOrder: Order | null = await repository.findById(Id.from(id));
+
+    if (!persistedOrder) {
+        throw new DomainError('Order not found to complete');
+    }
+
+    const order: Order = Order.toDomain(persistedOrder.toPersistence());
+    order.complete();
+
+    await repository.save(order);
+    return`Order with id ${id} completed`;
+}
+
+export const createOrder = async (req: Request, res: Response) => {
+    const repository: OrderRepository = await Factory.getOrderRepository();
+    try {
+        const requestOrder = req.body;
+
+        const createdOrder = await createOrderUseCase(requestOrder, repository);
+        res.send(createdOrder);
+    } catch (error) {
+        if(error instanceof DomainError) {
+            return res.send(error.message);
+        }
+        res.send('Unexpected error');
+    }
+}
+
+export const getAllOrders = async (_req: Request, res: Response) => {
+    const repository: OrderRepository = await Factory.getOrderRepository();
+    const ordersDto = await getAllOrdersUseCase(repository);
+    res.json(ordersDto);
+};
+
 export const updateOrder = async (req: Request, res: Response) => {
     const repository: OrderRepository = await Factory.getOrderRepository();
 
@@ -104,22 +118,12 @@ export const updateOrder = async (req: Request, res: Response) => {
 
 export const completeOrder = async (req: Request, res: Response) => {
     try {
-        console.log("POST /orders/:id/complete");
         const { id } = req.params;
 
         const repository: OrderRepository = await Factory.getOrderRepository();
+        const completedOrder = await completeOrderUseCase(id, repository);
 
-        const persistedOrder: Order | null = await repository.findById(Id.from(req.params.id));
-
-        if (!persistedOrder) {
-            return res.send('Order not found to complete');
-        }
-
-        const order: Order = Order.toDomain(persistedOrder.toPersistence());
-        order.complete();
-
-        await repository.save(order);
-        res.send(`Order with id ${id} completed`);
+        res.send(completedOrder);
     } catch (error) {
         if(error instanceof DomainError) {
             return res.send(error.message);
