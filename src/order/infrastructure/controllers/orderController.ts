@@ -60,13 +60,13 @@ export class OrderController {
             res.send('Unexpected error');
         }
     }
+
+    async deleteOrder(req: Request, res: Response) {
+        const repository: OrderRepository = await Factory.getOrderRepository();
+
+        const {id} = req.params;
+
+        const deletedOrder = await new OrderUseCase(repository).deleteOrderUseCase(id);
+        res.send(deletedOrder);
+    }
 }
-
-export const deleteOrder = async (req: Request, res: Response) => {
-    const repository: OrderRepository = await Factory.getOrderRepository();
-
-    const { id } = req.params;
-
-    const deletedOrder = await new OrderUseCase(repository).deleteOrderUseCase(id);
-    res.send(deletedOrder);
-};
