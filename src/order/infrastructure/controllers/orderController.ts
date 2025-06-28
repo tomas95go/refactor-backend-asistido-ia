@@ -58,18 +58,14 @@ export const getAllOrders = async (_req: Request, res: Response) => {
     res.json(ordersDto);
 };
 
-// Update order
-export const updateOrder = async (req: Request, res: Response) => {
-    console.log("PUT /orders/:id");
-    const {id} = req.params;
-    const {status, shippingAddress, discountCode} = req.body;
-
-    const repository: OrderRepository = await Factory.getOrderRepository();
+// ToDo: introduce a type for update dto
+async function updateOrderUseCase(dto: { id: string, status: string, shippingAddress: string, discountCode: DiscountCodes }, repository: OrderRepository): Promise<string> {
+    const { id, status, shippingAddress, discountCode } = dto;
 
     const persistedOrder: Order | null = await repository.findById(Id.from(id));
 
     if (!persistedOrder) {
-        return res.send('Order not found');
+        return 'Order not found';
     }
 
     if (shippingAddress) {
@@ -85,7 +81,25 @@ export const updateOrder = async (req: Request, res: Response) => {
     }
 
     await repository.save(persistedOrder);
-    res.send(`Order updated. New status: ${persistedOrder.toPersistence().status}`);
+
+    return `Order updated. New status: ${persistedOrder.toPersistence().status}`;
+}
+
+export const updateOrder = async (req: Request, res: Response) => {
+    const repository: OrderRepository = await Factory.getOrderRepository();
+
+    const {id} = req.params;
+    const {status, shippingAddress, discountCode} = req.body;
+
+    const dto = {
+        id,
+        status,
+        shippingAddress,
+        discountCode,
+    };
+
+    const updatedOrder = await updateOrderUseCase(dto, repository);
+    res.send(updatedOrder);
 }
 
 export const completeOrder = async (req: Request, res: Response) => {
