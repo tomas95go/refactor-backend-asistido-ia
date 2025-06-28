@@ -78,6 +78,17 @@ async function completeOrderUseCase(id: string, repository: OrderRepository): Pr
     return`Order with id ${id} completed`;
 }
 
+async function deleteOrderUseCase(id: string, repository: OrderRepository): Promise<string> {
+    const order: Order | null = await repository.findById(Id.from(id));
+
+    if (!order) {
+        return 'Order not found';
+    }
+
+    await repository.delete(Id.from(id));
+    return 'Order deleted';
+}
+
 export const createOrder = async (req: Request, res: Response) => {
     const repository: OrderRepository = await Factory.getOrderRepository();
     try {
@@ -133,15 +144,7 @@ export const completeOrder = async (req: Request, res: Response) => {
 };
 
 export const deleteOrder = async (req: Request, res: Response) => {
-    console.log("DELETE /orders/:id");
     const repository: OrderRepository = await Factory.getOrderRepository();
-
-    const order: Order | null = await repository.findById(Id.from(req.params.id));
-
-    if (!order) {
-        return res.send('Order not found');
-    }
-
-    await repository.delete(Id.from(req.params.id));
-    res.send('Order deleted');
+    const deletedOrder = await deleteOrderUseCase(req.params.id, repository);
+    res.send(deletedOrder);
 };
