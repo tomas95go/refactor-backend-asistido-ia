@@ -44,23 +44,23 @@ export class OrderController {
         const updatedOrder = await new OrderUseCase(repository).updateOrderUseCase(dto);
         res.send(updatedOrder);
     }
-}
 
-export const completeOrder = async (req: Request, res: Response) => {
-    try {
-        const { id } = req.params;
+    async completeOrder(req: Request, res: Response) {
+        try {
+            const {id} = req.params;
 
-        const repository: OrderRepository = await Factory.getOrderRepository();
-        const completedOrder = await new OrderUseCase(repository).completeOrderUseCase(id);
+            const repository: OrderRepository = await Factory.getOrderRepository();
+            const completedOrder = await new OrderUseCase(repository).completeOrderUseCase(id);
 
-        res.send(completedOrder);
-    } catch (error) {
-        if(error instanceof DomainError) {
-            return res.send(error.message);
+            res.send(completedOrder);
+        } catch (error) {
+            if (error instanceof DomainError) {
+                return res.send(error.message);
+            }
+            res.send('Unexpected error');
         }
-        res.send('Unexpected error');
     }
-};
+}
 
 export const deleteOrder = async (req: Request, res: Response) => {
     const repository: OrderRepository = await Factory.getOrderRepository();
