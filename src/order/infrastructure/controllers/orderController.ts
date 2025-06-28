@@ -11,7 +11,7 @@ import {DomainError} from "../../domain/error/error";
 import {Factory} from "../../../factory";
 import {OrderRepository} from "../../domain/repository/repository";
 
-async function createOrderUseCase(dto: { items: any, shippingAddress: string, discountCode?: DiscountCode }, repository: OrderRepository): Promise<string> {
+async function createOrderUseCase(dto: { items: { productId: string, quantity: number, price: number }[], shippingAddress: string, discountCode?: DiscountCodes }, repository: OrderRepository): Promise<string> {
     const { items, shippingAddress, discountCode } = dto;
 
     const order: Order = Order.create(
@@ -31,7 +31,12 @@ async function createOrderUseCase(dto: { items: any, shippingAddress: string, di
     return `Order created with total: ${order.toPersistence().total}`;
 }
 
-// Create a new order
+// ToDo: Introduce a type for api order response
+async function getAllOrdersUseCase(repository: OrderRepository) {
+    const orders: Order[] | [] = await repository.findAll();
+    return orders.map(order => order.toPersistence());
+}
+
 export const createOrder = async (req: Request, res: Response) => {
     const repository: OrderRepository = await Factory.getOrderRepository();
     try {
@@ -47,13 +52,9 @@ export const createOrder = async (req: Request, res: Response) => {
     }
 }
 
-// Get all orders
 export const getAllOrders = async (_req: Request, res: Response) => {
-    console.log("GET /orders");
-
     const repository: OrderRepository = await Factory.getOrderRepository();
-    const orders: Order[] | []= await repository.findAll();
-    const ordersDto = orders.map(order => order.toPersistence());
+    const ordersDto = await getAllOrdersUseCase(repository);
     res.json(ordersDto);
 };
 
@@ -79,7 +80,7 @@ export const updateOrder = async (req: Request, res: Response) => {
         persistedOrder.updateDiscountCode(discountCode);
     }
 
-    if(status) {
+    if (status) {
         persistedOrder.complete();
     }
 
@@ -87,7 +88,6 @@ export const updateOrder = async (req: Request, res: Response) => {
     res.send(`Order updated. New status: ${persistedOrder.toPersistence().status}`);
 }
 
-// Complete order
 export const completeOrder = async (req: Request, res: Response) => {
     try {
         console.log("POST /orders/:id/complete");
@@ -114,7 +114,6 @@ export const completeOrder = async (req: Request, res: Response) => {
     }
 };
 
-// Delete order
 export const deleteOrder = async (req: Request, res: Response) => {
     console.log("DELETE /orders/:id");
     const repository: OrderRepository = await Factory.getOrderRepository();
