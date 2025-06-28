@@ -1,7 +1,5 @@
 import express, { Express, Request, RequestHandler, Response } from 'express';
-import mongoose from 'mongoose';
 import {OrderController} from './order/infrastructure/controllers/orderController';
-import {OrderRepository} from "./order/domain/repository/repository";
 import {Factory} from "./factory";
 import {OrderUseCase} from "./order/application/order";
 
@@ -12,11 +10,9 @@ export async function createServer(serverPort: string) {
     const app: Express = express();
     app.use(express.json());
 
-    const repository: OrderRepository = await Factory.getOrderRepository();
+    const orderUseCase: OrderUseCase = await Factory.createOrderUseCase();
 
     const orderController: OrderController = new OrderController();
-
-    const orderUseCase: OrderUseCase = new OrderUseCase(repository);
 
     app.post('/orders', ((req: Request, res: Response) => orderController.createOrder(req, res, orderUseCase)) as RequestHandler);
     app.get('/orders', ((req: Request, res: Response) => orderController.getAllOrders(req, res, orderUseCase)) as RequestHandler);

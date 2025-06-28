@@ -1,6 +1,6 @@
 import {OrderRepository} from "./order/domain/repository/repository";
-import dotenv from "dotenv";
 import {OrderMongoRepository} from "./order/infrastructure/repository/repository";
+import {OrderUseCase} from "./order/application/order";
 
 export class Factory {
     private static OrderRepository: OrderRepository;
@@ -11,5 +11,9 @@ export class Factory {
             this.OrderRepository = await OrderMongoRepository.create(DATABASE_CONNECTION_STRING as string);
         }
         return this.OrderRepository;
+    }
+
+    static async createOrderUseCase(): Promise<OrderUseCase> {
+        return new OrderUseCase(await this.getOrderRepository());
     }
 }
