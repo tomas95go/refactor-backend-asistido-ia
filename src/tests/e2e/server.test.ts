@@ -159,7 +159,7 @@ describe('Order management module', () => {
                 shippingAddress: 'Salt street 200',
             };
 
-            const updateOrderResponse = await request(server).put(`/orders/${createdOrder._id}`).send(newOrderAddress);
+            const updateOrderResponse = await request(server).put(`/orders/${createdOrder.id}`).send(newOrderAddress);
             expect(updateOrderResponse.status).toBe(200);
 
             const updatedOrder = await getValidOrder(server);
@@ -175,7 +175,7 @@ describe('Order management module', () => {
                 discountCode: DiscountCodes.DISCOUNT20,
             };
 
-            const updateOrderResponse = await request(server).put(`/orders/${createdOrder._id}`).send(newDiscountCode);
+            const updateOrderResponse = await request(server).put(`/orders/${createdOrder.id}`).send(newDiscountCode);
             expect(updateOrderResponse.status).toBe(200);
 
             const updatedOrder = await getValidOrder(server);
@@ -192,7 +192,7 @@ describe('Order management module', () => {
                 status: OrderStatus.Completed,
             };
 
-            const updateOrderResponse = await request(server).put(`/orders/${createdOrder._id}`).send(newStatus);
+            const updateOrderResponse = await request(server).put(`/orders/${createdOrder.id}`).send(newStatus);
             expect(updateOrderResponse.status).toBe(200);
 
             const updatedOrder = await getValidOrder(server);
@@ -217,7 +217,7 @@ describe('Order management module', () => {
             await createValidOrder(server);
             const order = await getValidOrder(server);
 
-            const deleteResponse = await request(server).delete(`/orders/${order._id}`);
+            const deleteResponse = await request(server).delete(`/orders/${order.id}`);
             expect(deleteResponse.status).toBe(200);
             expect(deleteResponse.text).toBe(`Order deleted`);
         });
@@ -230,9 +230,9 @@ describe('Order management module', () => {
             await createValidOrder(server);
             const createdOrder = await getValidOrder(server);
 
-            const completeOrderResponse = await request(server).post(`/orders/${createdOrder._id}/complete`);
+            const completeOrderResponse = await request(server).post(`/orders/${createdOrder.id}/complete`);
             expect(completeOrderResponse.status).toBe(200);
-            expect(completeOrderResponse.text).toBe(`Order with id ${createdOrder._id} completed`);
+            expect(completeOrderResponse.text).toBe(`Order with id ${createdOrder.id} completed`);
 
             const completedOrder = await getValidOrder(server);
             expect(completedOrder.status).toBe(`COMPLETED`);
@@ -248,8 +248,8 @@ describe('Order management module', () => {
             await createValidOrder(server);
             const createdOrder = await getValidOrder(server);
 
-            await request(server).post(`/orders/${createdOrder._id}/complete`);
-            const failedCompletionOrderResponse = await request(server).post(`/orders/${createdOrder._id}/complete`);
+            await request(server).post(`/orders/${createdOrder.id}/complete`);
+            const failedCompletionOrderResponse = await request(server).post(`/orders/${createdOrder.id}/complete`);
             expect(failedCompletionOrderResponse.status).toBe(200);
 
             const failedOrder = await getValidOrder(server);

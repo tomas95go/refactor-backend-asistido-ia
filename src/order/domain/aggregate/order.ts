@@ -6,12 +6,13 @@ import {DiscountCode, DiscountCodes} from "../constant/discount-code";
 import {DomainError} from "../error/error";
 import {PositiveNumber} from "../value-object/positive-number";
 
-export type PersistOrderModel = {
-    _id: string;
+export type OrderDto = {
+    id: string;
     items: { productId: string; quantity: number; price: number; }[];
     shippingAddress: string;
     status: OrderStatus,
-    discountCode?: DiscountCode
+    discountCode?: DiscountCode,
+    total: number;
 };
 
 export class Order {
@@ -30,13 +31,30 @@ export class Order {
         return new Order(Id.create(), items, shippingAddress, OrderStatus.Created, discountCode);
     }
 
-    static toDomain(persisted: PersistOrderModel): Order {
+    static toDomain(dto: OrderDto): Order {
         return new Order(
-            Id.from(persisted._id),
-            persisted.items.map((item: any) => OrderLine.create(Id.from(item.productId),PositiveNumber.create(item.quantity),PositiveNumber.create(item.price))),
-            Address.create(persisted.shippingAddress),
-            persisted.status,
-            persisted.discountCode);
+            Id.from(dto.id),
+            dto.items.map(item => OrderLine.create(Id.from(item.productId),PositiveNumber.create(item.quantity),PositiveNumber.create(item.price))),
+            Address.create(dto.shippingAddress),
+            dto.status,
+            dto.discountCode);
+    }
+
+    toDto(): OrderDto {
+        return {
+            id: this.id.value,
+            items: this.items.map(item => {
+                return {
+                    productId: item.productId.value,
+                    quantity: item.quantity.value,
+                    price: item.price.value,
+                }
+            }),
+            shippingAddress: this.shippingAddress.value,
+            status: this.status,
+            discountCode: this.discountCode,
+            total: this.calculateTotal().value
+        }
     }
 
     calculateTotal(): PositiveNumber {
@@ -60,23 +78,6 @@ export class Order {
 
     isCompleted() {
         return this.status === OrderStatus.Completed;
-    }
-
-    toPersistence() {
-        return {
-            _id: this.id.value,
-            items: this.items.map(item => {
-                return {
-                    productId: item.productId.value,
-                    quantity: item.quantity.value,
-                    price: item.price.value,
-                }
-            }),
-            shippingAddress: this.shippingAddress.value,
-            status: this.status,
-            discountCode: this.discountCode,
-            total: this.calculateTotal().value
-        }
     }
 
     updateShippingAddress(address: Address): void {

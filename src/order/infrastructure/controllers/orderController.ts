@@ -41,12 +41,12 @@ async function createOrderUseCase(dto: RequestOrder, repository: OrderRepository
 
     await repository.save(order);
 
-    return `Order created with total: ${order.toPersistence().total}`;
+    return `Order created with total: ${order.toDto().total}`;
 }
 
 async function getAllOrdersUseCase(repository: OrderRepository) {
     const orders: Order[] | [] = await repository.findAll();
-    return orders.map(order => order.toPersistence());
+    return orders.map(order => order.toDto());
 }
 
 async function updateOrderUseCase(dto: RequestOrderUpdate, repository: OrderRepository): Promise<string> {
@@ -72,7 +72,7 @@ async function updateOrderUseCase(dto: RequestOrderUpdate, repository: OrderRepo
 
     await repository.save(persistedOrder);
 
-    return `Order updated. New status: ${persistedOrder.toPersistence().status}`;
+    return `Order updated. New status: ${persistedOrder.toDto().status}`;
 }
 
 async function completeOrderUseCase(id: string, repository: OrderRepository): Promise<string> {
@@ -82,7 +82,7 @@ async function completeOrderUseCase(id: string, repository: OrderRepository): Pr
         throw new DomainError('Order not found to complete');
     }
 
-    const order: Order = Order.toDomain(persistedOrder.toPersistence());
+    const order: Order = Order.toDomain(persistedOrder.toDto());
     order.complete();
 
     await repository.save(order);

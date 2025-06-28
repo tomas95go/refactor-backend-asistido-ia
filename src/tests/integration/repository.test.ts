@@ -34,8 +34,8 @@ describe('Order repository methods', () => {
        //Act
        await repository.save(order);
        //Assert
-       const savedOrder: Order | null = await repository.findById(Id.from(order.toPersistence()._id));
-       expect(savedOrder?.toPersistence()).toEqual(order.toPersistence());
+       const savedOrder: Order | null = await repository.findById(Id.from(order.toDto().id));
+       expect(savedOrder?.toDto()).toEqual(order.toDto());
     });
 
     it('Should list all orders', async () => {
@@ -72,7 +72,7 @@ describe('Order repository methods', () => {
 
         await repository.save(order);
         //Act
-        await repository.delete(Id.from(order.toPersistence()._id));
+        await repository.delete(Id.from(order.toDto().id));
         //Assert
         const savedOrders: Order[] | [] = await repository.findAll();
         expect(savedOrders).toHaveLength(0);
@@ -97,7 +97,7 @@ describe('Order repository methods', () => {
         await repository.save(order);
         //Assert
         const savedOrders: Order[] | [] = await repository.findAll();
-        const savedOrder: Order | null = await repository.findById(Id.from(order.toPersistence()._id));
-        expect(savedOrder?.toPersistence().shippingAddress).toEqual(order.toPersistence().shippingAddress);
+        const savedOrder: Order | null = await repository.findById(Id.from(order.toDto().id));
+        expect(savedOrder?.toDto().shippingAddress).toEqual(order.toDto().shippingAddress);
     });
 });
