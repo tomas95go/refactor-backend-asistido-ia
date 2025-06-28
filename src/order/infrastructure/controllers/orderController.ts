@@ -5,19 +5,21 @@ import {Factory} from "../../../factory";
 import {OrderRepository} from "../../domain/repository/repository";
 import {OrderUseCase} from "../../application/order";
 
-export const createOrder = async (req: Request, res: Response) => {
-    const repository: OrderRepository = await Factory.getOrderRepository();
-    try {
-        const requestOrder = req.body;
+export class OrderController {
+    async createOrder(req: Request, res: Response) {
+        const repository: OrderRepository = await Factory.getOrderRepository();
+        try {
+            const requestOrder = req.body;
 
-        const createdOrder = await new OrderUseCase(repository).createOrderUseCase(requestOrder);
+            const createdOrder = await new OrderUseCase(repository).createOrderUseCase(requestOrder);
 
-        res.send(createdOrder);
-    } catch (error) {
-        if(error instanceof DomainError) {
-            return res.send(error.message);
+            res.send(createdOrder);
+        } catch (error) {
+            if (error instanceof DomainError) {
+                return res.send(error.message);
+            }
+            res.send('Unexpected error');
         }
-        res.send('Unexpected error');
     }
 }
 
