@@ -1,5 +1,5 @@
 import {OrderRepository} from "./order/domain/repository/repository";
-import {OrderMongoRepository} from "./order/infrastructure/repository/repository";
+import {OrderMongoRepository} from "./order/infrastructure/repository/mongo-repository";
 import {OrderUseCase} from "./order/application/order";
 import {OrderController} from "./order/infrastructure/controllers/orderController";
 

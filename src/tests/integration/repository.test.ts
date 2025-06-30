@@ -4,7 +4,7 @@ import {PositiveNumber} from "../../order/domain/value-object/positive-number";
 import {Address} from "../../order/domain/value-object/address";
 import {Order} from "../../order/domain/aggregate/order";
 import mongoose from "mongoose";
-import {OrderMongoRepository} from "../../order/infrastructure/repository/repository";
+import {OrderMongoRepository} from "../../order/infrastructure/repository/mongo-repository";
 
 describe('Order repository methods', () => {
     let repository: OrderMongoRepository;
