@@ -30,7 +30,8 @@ class InMemoryRepository implements OrderRepository  {
     };
 
     async delete(id: Id): Promise<void> {
-        return Promise.resolve(undefined);
+        const orderIndex = this.orders.findIndex(order => order.getId() === id);
+        this.orders.splice(orderIndex, 1);
     };
 
 }
@@ -99,6 +100,25 @@ describe('Order repository (in memory) methods', () => {
         // Assert
         const savedOrder: Order | null = await repository.findById(order.getId());
         expect(savedOrder?.getId()).toBe(order.getId());
+    });
+
+    it('Should delete an order by id', async () => {
+        // Arrange
+        const shippingAddressPrimitives = 'Avenida siempreviva 101';
+        const orderItemsPrimitives = [{
+            productId: '32aba416-8455-4018-82c4-d56253c152e9',
+            quantity: 2,
+            price: 200
+        }];
+        const shippingAddress: Address = Address.create(shippingAddressPrimitives);
+        const orderItems: OrderLine[]= orderItemsPrimitives.map(item => OrderLine.create(Id.from(item.productId), PositiveNumber.create(item.quantity), PositiveNumber.create(item.price),));
+        const order: Order = Order.create(orderItems, shippingAddress);
+        await repository.save(order);
+        // Act
+        await repository.delete(order.getId());
+        // Assert
+        const savedOrders: Order[] | [] = await repository.findAll();
+        expect(savedOrders.length).toBe(0);
     });
 
 });
