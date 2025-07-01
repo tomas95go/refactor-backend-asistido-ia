@@ -14,7 +14,11 @@ class InMemoryRepository implements OrderRepository  {
     }
 
     async findById(id: Id): Promise<Order | null> {
-        throw Error('Method not implemented.');
+        const order: Order | undefined = this.orders.find(order => order.getId() === id);
+        if (!order) {
+            return null;
+        }
+        return order;
     };
 
     async findAll(): Promise<Order[] | []> {
@@ -77,6 +81,24 @@ describe('Order repository (in memory) methods', () => {
         // Assert
         const savedOrders: Order[] | [] = await repository.findAll();
         expect(savedOrders).toHaveLength(1);
+    });
+
+    it('Should get an order by id', async () => {
+        // Arrange
+        const shippingAddressPrimitives = 'Avenida siempreviva 101';
+        const orderItemsPrimitives = [{
+            productId: '32aba416-8455-4018-82c4-d56253c152e9',
+            quantity: 2,
+            price: 200
+        }];
+        const shippingAddress: Address = Address.create(shippingAddressPrimitives);
+        const orderItems: OrderLine[]= orderItemsPrimitives.map(item => OrderLine.create(Id.from(item.productId), PositiveNumber.create(item.quantity), PositiveNumber.create(item.price),));
+        const order: Order = Order.create(orderItems, shippingAddress);
+        // Act
+        await repository.save(order);
+        // Assert
+        const savedOrder: Order | null = await repository.findById(order.getId());
+        expect(savedOrder?.getId()).toBe(order.getId());
     });
 
 });

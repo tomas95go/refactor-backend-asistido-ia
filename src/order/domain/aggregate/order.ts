@@ -40,6 +40,10 @@ export class Order {
             dto.discountCode);
     }
 
+    getId(): Id {
+        return this.id;
+    }
+
     toDto(): OrderDto {
         return {
             id: this.id.value,
