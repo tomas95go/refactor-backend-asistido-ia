@@ -53,11 +53,30 @@ describe('Order repository (in memory) methods', () => {
         // Act
         await repository.save(order);
         // Assert
-        const savedOrder: Order[] | [] = await repository.findAll();
-        expect(savedOrder[0].toDto().items[0].productId).toBe(orderItemsPrimitives[0].productId);
-        expect(savedOrder[0].toDto().items[0].quantity).toBe(orderItemsPrimitives[0].quantity);
-        expect(savedOrder[0].toDto().items[0].price).toBe(orderItemsPrimitives[0].price);
-        expect(savedOrder[0].toDto().shippingAddress).toBe(shippingAddressPrimitives);
+        const savedOrders: Order[] | [] = await repository.findAll();
+        const savedOrder: Order = savedOrders[0];
+        expect(savedOrder.toDto().items[0].productId).toBe(orderItemsPrimitives[0].productId);
+        expect(savedOrder.toDto().items[0].quantity).toBe(orderItemsPrimitives[0].quantity);
+        expect(savedOrder.toDto().items[0].price).toBe(orderItemsPrimitives[0].price);
+        expect(savedOrder.toDto().shippingAddress).toBe(shippingAddressPrimitives);
+    });
+
+    it('Should get all orders', async () => {
+        // Arrange
+        const shippingAddressPrimitives = 'Avenida siempreviva 101';
+        const orderItemsPrimitives = [{
+            productId: '32aba416-8455-4018-82c4-d56253c152e9',
+            quantity: 2,
+            price: 200
+        }];
+        const shippingAddress: Address = Address.create(shippingAddressPrimitives);
+        const orderItems: OrderLine[]= orderItemsPrimitives.map(item => OrderLine.create(Id.from(item.productId), PositiveNumber.create(item.quantity), PositiveNumber.create(item.price),));
+        const order: Order = Order.create(orderItems, shippingAddress);
+        // Act
+        await repository.save(order);
+        // Assert
+        const savedOrders: Order[] | [] = await repository.findAll();
+        expect(savedOrders).toHaveLength(1);
     });
 
 });
