@@ -1,6 +1,8 @@
 import mongoose, { Document, Schema, Model } from 'mongoose';
+import {OrderStatus} from "../../domain/constant/status";
+import {DiscountCode} from "../../domain/constant/discount-code";
 
-export interface IOrder extends Document {
+export interface MongooseOrder extends Document {
     _id: string;
     items: {
         productId: string;
@@ -8,12 +10,12 @@ export interface IOrder extends Document {
         price: number;
     }[];
     status: string;
-    discountCode?: string;
+    discountCode?: DiscountCode;
     shippingAddress: string;
     total?: number;
 }
 
-const OrderSchema: Schema = new Schema({
+export const OrderSchema: Schema = new Schema({
     _id: { type: String, default: () => new mongoose.Types.ObjectId().toString() },
     items: [
         {
@@ -22,10 +24,10 @@ const OrderSchema: Schema = new Schema({
             price: { type: Number },
         },
     ],
-    status: { type: String, default: 'CREATED' },
+    status: { type: String, default: OrderStatus.Created },
     discountCode: { type: String, required: false },
     shippingAddress: { type: String },
     total: { type: Number, default: 0 },
 });
 
-export const OrderModel= mongoose.model<IOrder>('Order', OrderSchema);
+export const OrderModel= mongoose.model<MongooseOrder>('Order', OrderSchema);
