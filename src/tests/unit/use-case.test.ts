@@ -113,4 +113,25 @@ describe('Order use case', () => {
         // Assert
         expect(updatedOrder).toBe(`Order with id ${savedOrder.id} completed`);
     });
+
+    it('Should delete an existing order', async () => {
+        // Arrange
+        const newOrder: RequestOrder = {
+            items: [{
+                productId: '32aba416-8455-4018-82c4-d56253c152e9',
+                quantity: 2,
+                price: 200
+            }],
+            shippingAddress: 'Avenida siempreviva 101',
+            discountCode: DiscountCodes.DISCOUNT20
+        };
+        await orderUseCase.createOrderUseCase(newOrder);
+        const savedOrders: OrderDto[] = await orderUseCase.getAllOrdersUseCase();
+        const savedOrder: OrderDto = savedOrders[0];
+        // Act
+        await orderUseCase.deleteOrderUseCase(savedOrder.id);
+        // Assert
+        const deletedOrders: OrderDto[] = await orderUseCase.getAllOrdersUseCase();
+        expect(deletedOrders.length).toBe(0);
+    });
 })
