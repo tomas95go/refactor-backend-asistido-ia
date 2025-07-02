@@ -14,11 +14,11 @@ export class Factory {
         return this.OrderRepository;
     }
 
-    static async createOrderUseCase(repository: OrderRepository): Promise<OrderUseCase> {
+    static createOrderUseCase(repository: OrderRepository): OrderUseCase {
         return new OrderUseCase(repository);
     }
 
-    static async createOrderController(useCase: OrderUseCase): Promise<OrderController> {
+    static createOrderController(useCase: OrderUseCase): OrderController {
         return new OrderController(useCase);
     }
 }

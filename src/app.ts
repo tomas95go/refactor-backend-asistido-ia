@@ -12,8 +12,8 @@ export async function createServer(serverPort: string) {
     app.use(express.json());
 
     const orderMongoRepository: OrderRepository = await Factory.getOrderRepository();
-    const orderUseCase: OrderUseCase = await Factory.createOrderUseCase(orderMongoRepository);
-    const orderController: OrderController = await Factory.createOrderController(orderUseCase);
+    const orderUseCase: OrderUseCase = Factory.createOrderUseCase(orderMongoRepository);
+    const orderController: OrderController = Factory.createOrderController(orderUseCase);
 
     app.post('/orders', ((req: Request, res: Response) => orderController.createOrder(req, res)) as RequestHandler);
     app.get('/orders', ((req: Request, res: Response) => orderController.getAllOrders(req, res)) as RequestHandler);
