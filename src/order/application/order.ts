@@ -8,12 +8,12 @@ import {PositiveNumber} from "../domain/value-object/positive-number";
 import {Address} from "../domain/value-object/address";
 import {DomainError} from "../domain/error/error";
 
-type RequestOrder = {
+export type RequestOrder = {
     items: { productId: string, quantity: number, price: number }[],
     shippingAddress: string,
     discountCode?: DiscountCodes
 };
-type RequestOrderUpdate = {
+export type RequestOrderUpdate = {
     id: string,
     status: OrderStatus,
     shippingAddress: string,

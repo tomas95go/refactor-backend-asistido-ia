@@ -5,7 +5,7 @@ import {OrderLine} from "../../order/domain/value-object/order-line";
 import {Address} from "../../order/domain/value-object/address";
 import {PositiveNumber} from "../../order/domain/value-object/positive-number";
 
-class InMemoryRepository implements OrderRepository  {
+export class InMemoryRepository implements OrderRepository  {
 
     private orders: Order[] = [];
 
