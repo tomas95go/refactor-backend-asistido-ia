@@ -94,7 +94,7 @@ describe('Order use case', () => {
         expect(updatedOrder).toBe('Order updated. New status: COMPLETED');
     });
 
-    it('Should update an existing order', async () => {
+    it('Should complete an existing order', async () => {
         // Arrange
         const newOrder: RequestOrder = {
             items: [{
