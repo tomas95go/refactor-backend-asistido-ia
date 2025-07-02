@@ -93,4 +93,24 @@ describe('Order use case', () => {
         // Assert
         expect(updatedOrder).toBe('Order updated. New status: COMPLETED');
     });
+
+    it('Should update an existing order', async () => {
+        // Arrange
+        const newOrder: RequestOrder = {
+            items: [{
+                productId: '32aba416-8455-4018-82c4-d56253c152e9',
+                quantity: 2,
+                price: 200
+            }],
+            shippingAddress: 'Avenida siempreviva 101',
+            discountCode: DiscountCodes.DISCOUNT20
+        };
+        await orderUseCase.createOrderUseCase(newOrder);
+        const savedOrders: OrderDto[] = await orderUseCase.getAllOrdersUseCase();
+        const savedOrder: OrderDto = savedOrders[0];
+        // Act
+        const updatedOrder = await orderUseCase.completeOrderUseCase(savedOrder.id);
+        // Assert
+        expect(updatedOrder).toBe(`Order with id ${savedOrder.id} completed`);
+    });
 })
