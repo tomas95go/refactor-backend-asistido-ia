@@ -5,7 +5,7 @@ import {Id} from "../../order/domain/value-object/id";
 import {PositiveNumber} from "../../order/domain/value-object/positive-number";
 import {Address} from "../../order/domain/value-object/address";
 
-class InMemoryMessenger implements Messenger {
+export class InMemoryMessenger implements Messenger {
 
     static create(): InMemoryMessenger {
         return new InMemoryMessenger();

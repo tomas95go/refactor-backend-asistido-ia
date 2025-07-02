@@ -7,6 +7,7 @@ import {Id} from "../domain/value-object/id";
 import {PositiveNumber} from "../domain/value-object/positive-number";
 import {Address} from "../domain/value-object/address";
 import {DomainError} from "../domain/error/error";
+import {Messenger} from "../domain/messenger/messenger";
 
 export type RequestOrder = {
     items: { productId: string, quantity: number, price: number }[],
@@ -21,8 +22,10 @@ export type RequestOrderUpdate = {
 };
 
 export class OrderUseCase {
-    constructor(private orderRepository: OrderRepository) {
-    }
+    constructor(
+        private orderRepository: OrderRepository,
+        private messenger: Messenger,
+    ) {}
 
     async createOrderUseCase(dto: RequestOrder): Promise<string> {
         const {items, shippingAddress, discountCode} = dto;
@@ -86,6 +89,10 @@ export class OrderUseCase {
         order.complete();
 
         await this.orderRepository.save(order);
+
+        const data = { to: 'fake@email.com', order };
+        await this.messenger.send(data);
+
         return `Order with id ${id} completed`;
     }
 

@@ -5,11 +5,13 @@ import mongoose from "mongoose";
 import { createServer } from '../../app';
 import {OrderStatus} from "../../order/domain/constant/status";
 import {DiscountCodes} from "../../order/domain/constant/discount-code";
+import {InMemoryMessenger} from "../integration/messenger.test";
 
 dotenv.config({ path: '.env.test' });
 
 describe('Status endpoint', () => {
     let server: Server;
+    let inMemoryMessenger: InMemoryMessenger;
 
     beforeAll(async () => {
         const SERVER_PORT = process.env.SERVER_PORT;
@@ -20,7 +22,9 @@ describe('Status endpoint', () => {
             process.exit(1);
         }
 
-        server = await createServer(SERVER_PORT)
+        inMemoryMessenger = InMemoryMessenger.create();
+
+        server = await createServer(SERVER_PORT, inMemoryMessenger);
     });
 
     afterAll(() => {
@@ -57,6 +61,7 @@ async function getValidOrder(server: Server) {
 describe('Order management module', () => {
 
     let server: Server;
+    let inMemoryMessenger: InMemoryMessenger;
 
     beforeAll(async () => {
         const SERVER_PORT = process.env.SERVER_PORT;
@@ -67,7 +72,9 @@ describe('Order management module', () => {
             process.exit(1);
         }
 
-        server = await createServer(SERVER_PORT)
+        inMemoryMessenger = InMemoryMessenger.create();
+
+        server = await createServer(SERVER_PORT, inMemoryMessenger)
     });
 
     afterAll(() => {

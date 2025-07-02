@@ -4,15 +4,19 @@ import {InMemoryRepository} from "../integration/in-memory-repository.test";
 import {DiscountCodes} from "../../order/domain/constant/discount-code";
 import {OrderDto} from "../../order/domain/aggregate/order";
 import {OrderStatus} from "../../order/domain/constant/status";
+import {InMemoryMessenger} from "../integration/messenger.test";
 
 describe('Order use case', () => {
 
     let memoryOrderRepository: InMemoryRepository;
+    let inMemoryMessenger: InMemoryMessenger;
     let orderUseCase: OrderUseCase;
 
     beforeAll(() => {
         memoryOrderRepository = InMemoryRepository.create();
-        orderUseCase = Factory.createOrderUseCase(memoryOrderRepository);
+        inMemoryMessenger = InMemoryMessenger.create();
+
+        orderUseCase = Factory.createOrderUseCase(memoryOrderRepository, inMemoryMessenger);
     });
 
     beforeEach(() => {

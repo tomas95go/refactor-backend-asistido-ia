@@ -3,16 +3,17 @@ import {OrderController} from './order/infrastructure/controllers/orderControlle
 import {Factory} from "./factory";
 import {OrderUseCase} from "./order/application/order";
 import {OrderRepository} from "./order/domain/repository/repository";
+import {Messenger} from "./order/domain/messenger/messenger";
 
 /**
  * @param serverPort
  */
-export async function createServer(serverPort: string) {
+export async function createServer(serverPort: string, messenger: Messenger) {
     const app: Express = express();
     app.use(express.json());
 
     const orderMongoRepository: OrderRepository = await Factory.getOrderRepository();
-    const orderUseCase: OrderUseCase = Factory.createOrderUseCase(orderMongoRepository);
+    const orderUseCase: OrderUseCase = Factory.createOrderUseCase(orderMongoRepository, messenger);
     const orderController: OrderController = Factory.createOrderController(orderUseCase);
 
     app.post('/orders', ((req: Request, res: Response) => orderController.createOrder(req, res)) as RequestHandler);
