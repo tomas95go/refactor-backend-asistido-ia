@@ -2,6 +2,7 @@ import express, { Express, Request, RequestHandler, Response } from 'express';
 import {OrderController} from './order/infrastructure/controllers/orderController';
 import {Factory} from "./factory";
 import {OrderUseCase} from "./order/application/order";
+import {OrderRepository} from "./order/domain/repository/repository";
 
 /**
  * @param serverPort
@@ -10,7 +11,9 @@ export async function createServer(serverPort: string) {
     const app: Express = express();
     app.use(express.json());
 
-    const orderController: OrderController = await Factory.createOrderController();
+    const orderMongoRepository: OrderRepository = await Factory.getOrderRepository();
+    const orderUseCase: OrderUseCase = await Factory.createOrderUseCase(orderMongoRepository);
+    const orderController: OrderController = await Factory.createOrderController(orderUseCase);
 
     app.post('/orders', ((req: Request, res: Response) => orderController.createOrder(req, res)) as RequestHandler);
     app.get('/orders', ((req: Request, res: Response) => orderController.getAllOrders(req, res)) as RequestHandler);
