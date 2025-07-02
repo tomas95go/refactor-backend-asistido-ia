@@ -15,9 +15,9 @@ export type RequestOrder = {
 };
 export type RequestOrderUpdate = {
     id: string,
-    status: OrderStatus,
-    shippingAddress: string,
-    discountCode: DiscountCodes
+    status?: OrderStatus,
+    shippingAddress?: string,
+    discountCode?: DiscountCodes
 };
 
 export class OrderUseCase {
