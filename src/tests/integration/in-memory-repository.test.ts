@@ -14,7 +14,7 @@ export class InMemoryRepository implements OrderRepository  {
     }
 
     async findById(id: Id): Promise<Order | null> {
-        const order: Order | undefined = this.orders.find(order => order.getId() === id);
+        const order: Order | undefined = this.orders.find(order => order.getId().value === id.value);
         if (!order) {
             return null;
         }
