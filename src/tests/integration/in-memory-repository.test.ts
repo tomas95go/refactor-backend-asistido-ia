@@ -7,7 +7,7 @@ import {PositiveNumber} from "../../order/domain/value-object/positive-number";
 
 class InMemoryRepository implements OrderRepository  {
 
-    private readonly orders: Order[] = [];
+    private orders: Order[] = [];
 
     static create(): InMemoryRepository {
         return new InMemoryRepository();
@@ -34,6 +34,9 @@ class InMemoryRepository implements OrderRepository  {
         this.orders.splice(orderIndex, 1);
     };
 
+    reset() {
+        this.orders = [];
+    }
 }
 
 describe('Order repository (in memory) methods', () => {
@@ -42,6 +45,10 @@ describe('Order repository (in memory) methods', () => {
 
     beforeAll(() => {
         repository = InMemoryRepository.create();
+    });
+
+    beforeEach(() => {
+        repository.reset();
     });
 
     it('Should save a new order', async () => {
