@@ -2,10 +2,21 @@ import {Factory} from "../../factory";
 import {OrderUseCase, RequestOrder} from "../../order/application/order";
 import {InMemoryRepository} from "../integration/in-memory-repository.test";
 import {DiscountCodes} from "../../order/domain/constant/discount-code";
+import {OrderDto} from "../../order/domain/aggregate/order";
 
 describe('Order use case', () => {
 
-    let orderUseCase: OrderUseCase = Factory.createOrderUseCase(InMemoryRepository.create());
+    let memoryOrderRepository: InMemoryRepository;
+    let orderUseCase: OrderUseCase;
+
+    beforeAll(() => {
+        memoryOrderRepository = InMemoryRepository.create();
+        orderUseCase = Factory.createOrderUseCase(memoryOrderRepository);
+    });
+
+    beforeEach(() => {
+        memoryOrderRepository.reset();
+    });
 
     it('Should create a new order without discount', async () => {
         // Arrange
@@ -38,5 +49,23 @@ describe('Order use case', () => {
         const savedOrder = await orderUseCase.createOrderUseCase(newOrder);
         // Assert
         expect(savedOrder).toBe('Order created with total: 320');
+    });
+
+    it('Should list all orders', async () => {
+        // Arrange
+        const newOrder: RequestOrder = {
+            items: [{
+                productId: '32aba416-8455-4018-82c4-d56253c152e9',
+                quantity: 2,
+                price: 200
+            }],
+            shippingAddress: 'Avenida siempreviva 101',
+            discountCode: DiscountCodes.DISCOUNT20
+        };
+        await orderUseCase.createOrderUseCase(newOrder);
+        // Act
+        const savedOrders: OrderDto[] = await orderUseCase.getAllOrdersUseCase();
+        // Assert
+        expect(savedOrders).toHaveLength(1);
     });
 })
